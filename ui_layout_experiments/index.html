@@ -23,7 +23,14 @@
     
   <section>
       <div class="container text-center">
-          <input id="file" type="file" accept="image/*">
+
+           <input id="file" type="file" accept="image/*">
+          
+             <input id="PLAYER_NAME_INPUT" autocomplete="off" />
+          
+
+          <button type="button" class="btn btn-primary" id='READY_BUTTON'>Ready</button>
+
           <table id="total votes" class="table">
             <thead>
               <tr>
@@ -71,7 +78,10 @@
             </div>
           </div>
         </div>
+        
        </div>
+       <div class="row" id="GENERATED_CARDS">
+        </div>
     </div>
   </section>
   <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->

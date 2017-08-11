@@ -10,6 +10,26 @@ class GamePhaseHandler
         this.io = io;
         this.intervalTimer = null;
         this.secondCount = 100;
+        this.playerData = {};
+    }
+
+
+    changePlayerName(UUID, name)
+    {
+
+        if(!(UUID in this.playerData))
+            {
+                //make new object for UUID if it doesn't exist yet
+                this.playerData[UUID] = {};
+            }
+        this.playerData[UUID].name = name;
+        console.log("Player name changed to: " + name);
+    }
+
+    broadcastPlayerData()
+    {
+        //on client, we just need to iterate over all UUID objects inside to get the names and stuff
+        this.io.emit('player_data_update', this.playerData);
     }
 
     startGame()

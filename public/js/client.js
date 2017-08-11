@@ -9,7 +9,8 @@
 
     var $inputField = $('#file');
 
-    
+    var clientUUID = null;
+    var socket = io();
     
     
 
@@ -22,6 +23,7 @@
     
         if (file) {
           if (/^image\//i.test(file.type)) {
+            //TODO: we should rewrite this routine so it sends stuff to the server correctly.
             readFile(file, $('#UUID_FROM_SERVER_TODO').find('.player-img'));
           } else {
             alert('Not a valid image!');
@@ -53,6 +55,26 @@
   }
 
 
+    function updatePlayerData(playerData)
+    {
+
+      //clear all cards
+      $('#GENERATED_CARDS').empty();
+
+      //iterate over all things in playerData
+      for (var key in playerData) {
+        if (playerData.hasOwnProperty(key)) {
+           var obj = playerData[key];
+
+           createCard(obj);
+           
+            
+        }
+     }
+
+    }
+
+
     function createCard(playerInfo)
     {
       //{type:"Fiat", model:"500", color:"white"};
@@ -64,7 +86,7 @@
 
       //TODO: image data, just base64 encode the image and send it via the socket
 
-      templateCopy.appendTo($('#CARD_LIST'));
+      templateCopy.appendTo($('#GENERATED_CARDS'));
       templateCopy.on('click', null, function() {
         cardClick($(this).find('.card'));
       });
@@ -100,7 +122,21 @@
 
     }
 
+    //Ready Button
+    $('#READY_BUTTON').click(function()
+    {
+      console.log("READY PRESSED");
 
+      socket.emit('ready', {UUID: clientUUID});
+
+    });
+
+    //Input Text Box
+    $('#PLAYER_NAME_INPUT').bind('input', function(){
+      console.log("INPUT CHANGED " + $(this).val());
+      socket.emit('name_change', {UUID: clientUUID, name: $(this).val()});
+    });
+    
     /*$('.card').click(function()
     {
       
@@ -120,31 +156,40 @@
     $(function () {
 
       
-        var socket = io();
+        
 
         if (localStorage.hasOwnProperty("werewolfAppID")) {
-            cli_id = localStorage.getItem("werewolfAppID")
-            socket.emit('start_blabla', cli_id);
-            console.log("TEST1 " + cli_id);
+          clientUUID = localStorage.getItem("werewolfAppID")
+            socket.emit('start_blabla', clientUUID);
+            console.log("TEST1 " + clientUUID);
         }
         else {
 
-            cli_id = guidGenerator()
-            localStorage.setItem("werewolfAppID", cli_id) // here someid from your google analytics fetch
-            socket.emit('start_blabla', cli_id);
-            console.log("TEST2 " + cli_id);
+          clientUUID = guidGenerator()
+            localStorage.setItem("werewolfAppID", clientUUID) // here someid from your google analytics fetch
+            socket.emit('start_blabla', clientUUID);
+            console.log("TEST2 " + clientUUID);
         }
 
+        socket.emit('join_room', {UUID: clientUUID, room: 'test_room'});
+        socket.emit('start', {UUID: clientUUID});
 
-        socket.emit('start', cli_id);
-
+        socket.on('join_ack', function(msg){
+          console.log("JOIN ACKED: " + msg);
+          });
         
         socket.on('chat message', function(msg){
         $('#messages').append($('<li>').text(msg));
         });
 
+        socket.on('player_data_update', function(msg){
+              updatePlayerData(msg);
+          });
+
+    
+
         socket.on('time_update', function(msg){
-          console.log("TIME UPDATE!!!! " + msg);
+          //console.log("TIME UPDATE!!!! " + msg);
           if(ttsEnabled)
             {
               //responsiveVoice.speak("Welcome to anus werewolf " + $('#PLAYER_NAME').text(), "Deutsch Female");
