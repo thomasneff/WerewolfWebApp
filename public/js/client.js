@@ -66,7 +66,15 @@
         if (playerData.hasOwnProperty(key)) {
            var obj = playerData[key];
 
-           createCard(obj);
+           if(key == clientUUID)
+            {
+                changeOwnPlayerInfo(obj);
+            }
+            else
+              {
+                createCard(obj);
+              }
+           
            
             
         }
@@ -74,6 +82,10 @@
 
     }
 
+    function changeOwnPlayerInfo(playerInfo)
+    {
+      $("#PLAYER_NAME").text(playerInfo.name);
+    } 
 
     function createCard(playerInfo)
     {
