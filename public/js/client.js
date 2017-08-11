@@ -48,9 +48,6 @@ function updatePlayerData(playerData) {
       else {
         createCard(obj);
       }
-
-
-
     }
   }
 
@@ -58,6 +55,7 @@ function updatePlayerData(playerData) {
 
 function changeOwnPlayerInfo(playerInfo) {
   $("#PLAYER_NAME").text(playerInfo.name);
+  $('#PLAYER_NAME_INPUT').val(playerInfo.name);
 }
 
 function createCard(playerInfo) {
@@ -107,7 +105,8 @@ function cardClick(object) {
 $('#READY_BUTTON').click(function () {
   console.log("READY PRESSED");
 
-  socket.emit('ready', { UUID: clientUUID });
+  socket.emit('ready', { UUID: clientUUID, ready: 1 });
+  socket.emit('start', { UUID: clientUUID });
 
 });
 

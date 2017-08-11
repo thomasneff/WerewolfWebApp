@@ -48,6 +48,24 @@ io.on('connection', function (socket) {
 
     console.log("join_room: " + msg.room + " by " + msg.UUID);
 
+
+    if(msg.UUID in UUIDSocketMap && msg.UUID in UUIDRoomMap)
+      {
+        //check if we are already connected.
+
+        //TODO/HACK: remove this, just for now, I send them their playerdata back.
+        var handler = getGamePhaseHandlerFromUUID(msg.UUID);
+        
+            if (handler != null) {
+              
+              //TODO: resending everything might be a waste, maybe just send specific things which are then updated client-side?
+              handler.broadcastPlayerData();
+        
+            }
+
+        return;
+      }
+
     UUIDSocketMap[msg.UUID] = socket;
     UUIDRoomMap[msg.UUID] = msg.room;
     socket.join(msg.room);
@@ -67,7 +85,7 @@ io.on('connection', function (socket) {
     var handler = getGamePhaseHandlerFromUUID(msg.UUID);
 
     if (handler != null) {
-      handler.changePlayerName(msg.UUID, msg.name);
+      handler.changePlayerDataKeyValue(msg.UUID, 'name', msg.name);
 
       //TODO: resending everything might be a waste, maybe just send specific things which are then updated client-side?
       handler.broadcastPlayerData();
@@ -80,7 +98,7 @@ io.on('connection', function (socket) {
     var handler = getGamePhaseHandlerFromUUID(msg.UUID);
 
     if (handler != null) {
-      handler.changePlayerImage(msg.UUID, msg.img);
+      handler.changePlayerDataKeyValue(msg.UUID, 'img', msg.img);
 
       //TODO: resending everything might be a waste, maybe just send specific things which are then updated client-side?
       handler.broadcastPlayerData();
@@ -88,7 +106,31 @@ io.on('connection', function (socket) {
     }
   });
 
+  socket.on('ready', function (msg) {
+    var handler = getGamePhaseHandlerFromUUID(msg.UUID);
+
+    if (handler != null) {
+      handler.changePlayerDataKeyValue(msg.UUID, 'ready', msg.ready);
+
+      //TODO: resending everything might be a waste, maybe just send specific things which are then updated client-side?
+      handler.broadcastPlayerData();
+
+    }
+  });
+
+
   socket.on('start', function (msg) {
+    var handler = getGamePhaseHandlerFromUUID(msg.UUID);
+
+    if (handler != null) {
+      
+
+      handler.startGame();
+
+    }
+  });
+
+  socket.on('NOT_IMPLEMENTED_YET', function (msg) {
 
     console.log("start: " + msg.UUID);
 
@@ -100,12 +142,6 @@ io.on('connection', function (socket) {
 
   });
 
-  socket.on('chat message', function (msg) {
-    myHandler.handleEvent(socket, msg);
-
-
-    io.emit('chat message', msg);
-  });
 });
 
 
