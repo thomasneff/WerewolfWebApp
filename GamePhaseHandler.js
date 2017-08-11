@@ -14,16 +14,30 @@ class GamePhaseHandler
     }
 
 
-    changePlayerName(UUID, name)
+    checkAndCreateUUID(UUID)
     {
-
         if(!(UUID in this.playerData))
             {
                 //make new object for UUID if it doesn't exist yet
                 this.playerData[UUID] = {};
             }
+    }
+
+    changePlayerName(UUID, name)
+    {
+        this.checkAndCreateUUID(UUID);
+        
         this.playerData[UUID].name = name;
         console.log("Player name changed to: " + name);
+    }
+
+    changePlayerImage(UUID, img)
+    {
+
+        this.checkAndCreateUUID(UUID);
+
+        this.playerData[UUID].img = img;
+        console.log("Player img changed to: " + img);
     }
 
     broadcastPlayerData()
