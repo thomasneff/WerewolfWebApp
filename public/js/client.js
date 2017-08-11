@@ -48,6 +48,8 @@
 
 
     $(function () {
+
+      responsiveVoice.speak("Welcome to werewolf " + $('#PLAYER_NAME').text());
         var socket = io();
 
         if (localStorage.hasOwnProperty("werewolfAppID")) {
