@@ -7,7 +7,7 @@ var express = require('express');
 app.use(express.static(path.join(__dirname, 'public')));
 var GamePhaseHandler = require('./GamePhaseHandler');
 
-myHandler = new GamePhaseHandler();
+myHandler = new GamePhaseHandler(io);
 
 
 app.get('/', function(req, res){
@@ -23,13 +23,19 @@ io.on('connection', function(socket){
 
     });
 
+    socket.on('start', function(msg){
+      
+            console.log("Start: " + msg);
+          
+                  myHandler.startGame();
+             
+      
+          });
+
     socket.on('chat message', function(msg){
         myHandler.handleEvent(socket, msg);
         
-        if(msg == "start")
-            {
-                myHandler.startGame();
-            }
+        
       io.emit('chat message', msg);
     });
 });

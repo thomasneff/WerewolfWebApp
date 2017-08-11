@@ -1,13 +1,15 @@
 
 class GamePhaseHandler
 {
-    constructor()
+    constructor(io)
     {
         this.phases = ["day", "vote_kill", "night_start", "werewolves", "witch"]
         this.currentPhase = 0;
         this.dayTimeoutSeconds = 3; // for testing, 3 seconds. Should be configurable or 5 minutes or something (300 seconds)
         this.timeoutObject = null;
-        
+        this.io = io;
+        this.intervalTimer = null;
+        this.secondCount = 100;
     }
 
     startGame()
@@ -21,7 +23,15 @@ class GamePhaseHandler
         //important: if all people have voted before the timeout ends, we *need* to clear it
         //using clearTimeout(...)
         this.timeoutObject = setTimeout(this.nextPhase.bind(this), this.dayTimeoutSeconds * 1000);
+        this.intervalTimer = setTimeout(this.timerUpdate.bind(this), 1000);
         console.log("Starting Game: Phase " + this.phases[this.currentPhase]);
+    }
+
+    timerUpdate()
+    {
+        console.log("Timer Update: " + this.secondCount);
+        this.io.emit('time_update', this.secondCount--);
+        this.intervalTimer = setTimeout(this.timerUpdate.bind(this), 1000);
     }
 
     handleDayEvent(sender, messageType)

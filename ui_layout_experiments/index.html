@@ -25,33 +25,33 @@
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
   <!-- Include all compiled plugins (below), or include individual files as needed -->
   <script src="js/bootstrap.min.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
 
 
-
-  <div class="container text-center">
-    <table id="total votes" class="table">
-      <thead>
-        <tr>
-          <th class "align-middle" width="33%">
-            <p class="text-left"><img class="rounded" width="25%" src="http://i.imgur.com/QHxnyes.jpg?1">100</p>
-          </th>
-          <th class "align-middle" width="33%">
-            <p class="text-center"> TIME </p>
-          </th>
-          <th class "align-middle" width="33%">
-            <p class="text-right">100 <img class="rounded" width="25%" src="http://i.imgur.com/QHxnyes.jpg?1"></p>
-          </th>
-        </tr>
-      </thead>
-    </table>
-    <h1>ANUS PLAYER</h1>
-  </div>
+  
 
 
 
   <section>
 
-
+      <div class="container text-center">
+          <table id="total votes" class="table">
+            <thead>
+              <tr>
+                <th class "align-middle" width="33%">
+                  <p class="text-left"><img class="rounded" width="25%" src="http://i.imgur.com/QHxnyes.jpg?1">100</p>
+                </th>
+                <th class "align-middle" width="33%">
+                  <p class="text-center" id="TIME_VALUE"> TIME </p>
+                </th>
+                <th class "align-middle" width="33%">
+                  <p class="text-right">100 <img class="rounded" width="25%" src="http://i.imgur.com/QHxnyes.jpg?1"></p>
+                </th>
+              </tr>
+            </thead>
+          </table>
+          <h1>ANUS PLAYER</h1>
+        </div>
 
 
 
@@ -103,8 +103,8 @@
 
   <section>
     <div class="container py-3">
-      <div class="row">
-        <div class="col-md-6 mt-4">
+      <div class="row" id="CARD_LIST">
+        <div class="col-md-6 mt-4" style="display:none;" id="CARD_TEMPLATE">
           <div class="card" id="UUID_HERE">
             <div class="row ">
               <div class="col col-md-4">
@@ -156,30 +156,97 @@
       $("body").css("background-color","black");
     }); */
     var activatedCard = null;
+    var cardState = 0;
+    var canVote = 0;
 
-    $('.card').click(function()
+    function cardClick(object)
     {
-      //console.log($(this));
+      console.log("Called with " + object);
+
+      if(canVote == 0)
+      {
+        return;
+      }
 
       if(activatedCard != null)
       {
         activatedCard.removeClass("voted_for_this_card");
       }
 
-      $(this).addClass("voted_for_this_card");
+      object.addClass("voted_for_this_card");
 
-      if(activatedCard != $(this))
+      if(activatedCard != object)
       {
-        activatedCard = $(this);
+        activatedCard = object;
         //TODO: send to server if card changed
       }
+    }
+
+
+    $('.card').click(function()
+    {
+      //console.log($(this));
+
+      cardClick($(this));
 
 
     });
 
-    var cardState = 0;
+    function guidGenerator() {
+        var S4 = function() {
+          return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
+        };
+        return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
+    }
+
+
+    $(function () {
+        var socket = io();
+
+        if (localStorage.hasOwnProperty("werewolfAppID")) {
+            cli_id = localStorage.getItem("werewolfAppID")
+            socket.emit('start_blabla', cli_id);
+            console.log("TEST1 " + cli_id);
+        }
+        else {
+
+            cli_id = guidGenerator()
+            localStorage.setItem("werewolfAppID", cli_id) // here someid from your google analytics fetch
+            socket.emit('start_blabla', cli_id);
+            console.log("TEST2 " + cli_id);
+        }
+
+
+        socket.emit('start', cli_id);
+
+        
+        socket.on('chat message', function(msg){
+        $('#messages').append($('<li>').text(msg));
+        });
+
+        socket.on('time_update', function(msg){
+          console.log("TIME UPDATE!!!! " + msg);
+          var date = new Date(null);
+          date.setSeconds(msg); // specify value for SECONDS here
+          date = date.toISOString().substr(14, 5);
+          $('#TIME_VALUE').text(date);
+        });
+    });
+    
+    
+
+    //on clicking the image
     $('.info-card').click(function () {
       console.log("PENI addwaS");
+
+      var template = $('#CARD_TEMPLATE');
+      var templateCopy = template.clone();
+      templateCopy.attr("id", "UUID_FROM_SERVER_TODO");
+      templateCopy.appendTo($('#CARD_LIST'));
+      templateCopy.on('click', null, function() {
+        cardClick($(this).find('.card'));
+      });
+      templateCopy.show();
 
       if (cardState == 1) {
         $(this).removeClass('flipped_front');
