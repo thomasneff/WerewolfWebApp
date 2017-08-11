@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -18,89 +17,41 @@
       <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
 </head>
-
-
 <body>
-  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-  <!-- Include all compiled plugins (below), or include individual files as needed -->
-  <script src="js/bootstrap.min.js"></script>
-  <script src="/socket.io/socket.io.js"></script>
-
-
-  
-
-
-
   <section>
-
       <div class="container text-center">
           <table id="total votes" class="table">
             <thead>
               <tr>
                 <th class "align-middle" width="33%">
-                  <p class="text-left"><img class="rounded" width="25%" src="http://i.imgur.com/QHxnyes.jpg?1">100</p>
+                  <p class="text-left"><img class="rounded" width="25%" src="http://i.imgur.com/QHxnyes.jpg?1" id ="GOOD_PIC">100</p>
                 </th>
                 <th class "align-middle" width="33%">
                   <p class="text-center" id="TIME_VALUE"> TIME </p>
                 </th>
                 <th class "align-middle" width="33%">
-                  <p class="text-right">100 <img class="rounded" width="25%" src="http://i.imgur.com/QHxnyes.jpg?1"></p>
+                  <p class="text-right">100 <img class="rounded" width="25%" src="http://i.imgur.com/QHxnyes.jpg?1" id ="BAD_PIC"></p>
                 </th>
               </tr>
             </thead>
           </table>
-          <h1>ANUS PLAYER</h1>
+          <h1 id ="PLAYER_NAME">ANUS</h1>
         </div>
-
-
-
-
     <div class="row">
-
-
       <div class="container text-center">
-
-
         <div class="info-card text-center">
-
           <div class="front text-center">
-            <img class="rounded" width="100%" src="http://i.imgur.com/QHxnyes.jpg?1">
+            <img class="rounded" width="100%" src="http://i.imgur.com/QHxnyes.jpg?1" id ="HIDDEN_PIC">
           </div>
           <div class="back text-center">
-            <h2>Gentlesir</h2>
-            <img class="rounded" width="50%" src="http://i.imgur.com/QHxnyes.jpg?1">
-            <p>
-              Professionally redefine enterprise functionalities through cutting-edge interfaces. Monotonectally promote multimedia based
-              meta-services with orthogonal alignments. Professionally initiate backward-compatible data for progressive
-              results. Globally reinvent quality ideas and flexible architectures. Seamlessly syndicate long-term high-impact
-              innovation whereas error-free systems. Credibly leverage other's bleeding-edge outsourcing and unique catalysts
-              for change. Holisticly productivate cooperative portals vis-a-vis granular value. Compellingly morph e-business
-              imperatives vis-a-vis empowered ROI. Compellingly iterate principle-centered customer service after plug-and-play
-              relationships. Enthusiastically extend error-free experiences whereas standards compliant communities. Rapidiously
-              actualize exceptional bandwidth via economically sound networks. Quickly simplify go forward platforms via
-              24/7 "outside the box" thinking. Authoritatively synergize fully tested functionalities through an expanded
-              array of e-tailers. Completely visualize cross-media leadership skills and value-added initiatives. Conveniently
-              administrate innovative internal or "organic" sources vis-a-vis turnkey paradigms. Objectively leverage existing
-              high-quality partnerships whereas client-centered e-markets. Globally procrastinate adaptive total linkage
-              and orthogonal sources. Quickly incentivize effective results via multimedia based services. Conveniently reinvent
-              team building networks through synergistic models. Credibly negotiate bleeding-edge opportunities via mission-critical
-              models. Synergistically simplify strategic imperatives vis-a-vis an expanded array of human capital. Intrinsicly
-              re-engineer B2C sources vis-a-vis interactive ROI. Appropriately promote collaborative architectures through
-              focused relationships. Uniquely transition client-focused data for an expanded array of niches. Authoritatively
-              transform fully tested scenarios without proactive sources. Phosfluorescently actualize flexible methods of
-              empowerment via corporate supply chains. Compellingly monetize cost effective growth strategies after highly
-              efficient imperatives. Dramatically grow high standards in functionalities vis-a-vis synergistic web services.
-              Completely pursue empowered materials after integrated infrastructures. Objectively evolve go.
-            </p>
+            <h2 id ="CHARACTER_NAME"></h2>
+            <img class="rounded" width="50%" src="http://i.imgur.com/QHxnyes.jpg?1" id ="CHARACTER_PIC">
+            <p id ="CHARACTER_DESC"></p>
           </div>
         </div>
-
       </div>
     </div>
-
   </section>
-
   <section>
     <div class="container py-3">
       <div class="row" id="CARD_LIST">
@@ -113,159 +64,17 @@
               <div class="col col-md-8">
                 <p>ASDF</p>
               </div>
-
             </div>
           </div>
         </div>
-        <div class="col-md-6 mt-4">
-          <div class="card">
-            <div class="row ">
-              <div class="col col-md-4">
-                <img src="https://placeholdit.imgix.net/~text?txtsize=38&txt=400%C3%97400&w=400&h=400" class="w-100">
-              </div>
-              <div class="col col-md-8">
-                <p>GHIJ</p>
-              </div>
-
-            </div>
-          </div>
-        </div>
-        <div class="col-md-6 mt-4">
-          <div class="card">
-            <div class="row ">
-              <div class="col col-md-4">
-                <img src="https://placeholdit.imgix.net/~text?txtsize=38&txt=400%C3%97400&w=400&h=400" class="w-100">
-              </div>
-              <div class="col col-md-8">
-                <p>GHIJ</p>
-              </div>
-
-            </div>
-          </div>
-        </div>
-      </div>
-
-
+       </div>
     </div>
   </section>
-
-  <script>
-
-    //to change background color
-    /* $(function(){
-      $("body").css("background-color","black");
-    }); */
-    var activatedCard = null;
-    var cardState = 0;
-    var canVote = 0;
-
-    function cardClick(object)
-    {
-      console.log("Called with " + object);
-
-      if(canVote == 0)
-      {
-        return;
-      }
-
-      if(activatedCard != null)
-      {
-        activatedCard.removeClass("voted_for_this_card");
-      }
-
-      object.addClass("voted_for_this_card");
-
-      if(activatedCard != object)
-      {
-        activatedCard = object;
-        //TODO: send to server if card changed
-      }
-    }
-
-
-    $('.card').click(function()
-    {
-      //console.log($(this));
-
-      cardClick($(this));
-
-
-    });
-
-    function guidGenerator() {
-        var S4 = function() {
-          return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
-        };
-        return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
-    }
-
-
-    $(function () {
-        var socket = io();
-
-        if (localStorage.hasOwnProperty("werewolfAppID")) {
-            cli_id = localStorage.getItem("werewolfAppID")
-            socket.emit('start_blabla', cli_id);
-            console.log("TEST1 " + cli_id);
-        }
-        else {
-
-            cli_id = guidGenerator()
-            localStorage.setItem("werewolfAppID", cli_id) // here someid from your google analytics fetch
-            socket.emit('start_blabla', cli_id);
-            console.log("TEST2 " + cli_id);
-        }
-
-
-        socket.emit('start', cli_id);
-
-        
-        socket.on('chat message', function(msg){
-        $('#messages').append($('<li>').text(msg));
-        });
-
-        socket.on('time_update', function(msg){
-          console.log("TIME UPDATE!!!! " + msg);
-          var date = new Date(null);
-          date.setSeconds(msg); // specify value for SECONDS here
-          date = date.toISOString().substr(14, 5);
-          $('#TIME_VALUE').text(date);
-        });
-    });
-    
-    
-
-    //on clicking the image
-    $('.info-card').click(function () {
-      console.log("PENI addwaS");
-
-      var template = $('#CARD_TEMPLATE');
-      var templateCopy = template.clone();
-      templateCopy.attr("id", "UUID_FROM_SERVER_TODO");
-      templateCopy.appendTo($('#CARD_LIST'));
-      templateCopy.on('click', null, function() {
-        cardClick($(this).find('.card'));
-      });
-      templateCopy.show();
-
-      if (cardState == 1) {
-        $(this).removeClass('flipped_front');
-        $(this).addClass('flipped_back');
-        cardState = 0;
-      }
-      else {
-        $(this).removeClass('flipped_back');
-        $(this).addClass('flipped_front');
-
-        cardState = 1;
-      }
-
-
-    });
-
-  </script>
-
-
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="js/bootstrap.min.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="js/client.js"></script>
 </body>
-
 </html>
