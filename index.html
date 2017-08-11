@@ -21,8 +21,33 @@
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
         <script>
+
+    function guidGenerator() {
+        var S4 = function() {
+          return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
+        };
+        return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
+    }
+
+    
+
     $(function () {
         var socket = io();
+
+        if (localStorage.hasOwnProperty("werewolfAppID")) {
+            cli_id = localStorage.getItem("werewolfAppID")
+            socket.emit('start_blabla', cli_id);
+            console.log("TEST1 " + cli_id);
+        }
+        else {
+
+            cli_id = guidGenerator()
+            localStorage.setItem("werewolfAppID", cli_id) // here someid from your google analytics fetch
+            socket.emit('start_blabla', cli_id);
+            console.log("TEST2 " + cli_id);
+        }
+
+
         $('form').submit(function(){
         socket.emit('chat message', $('#m').val());
         $('#m').val('');

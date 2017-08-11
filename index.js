@@ -13,20 +13,16 @@ app.get('/', function(req, res){
 });
 
 io.on('connection', function(socket){
-  console.log('a user connected');
-});
+    console.log("CONNECTION");
+    socket.on('start_blabla', function(msg){
 
+      console.log("Connect: " + msg);
 
-io.on('connection', function(socket){
-    console.log('a user connected');
-    socket.on('disconnect', function(){
-      console.log('user disconnected');
     });
-});
 
-io.on('connection', function(socket){
     socket.on('chat message', function(msg){
         myHandler.handleEvent(socket, msg);
+        
         if(msg == "start")
             {
                 myHandler.startGame();
