@@ -7,6 +7,70 @@
     var canVote = 0;
     var ttsEnabled = 0;
 
+    var $inputField = $('#file');
+
+    
+    
+    
+
+    
+
+   
+    
+      $inputField.on('change', function (e) {
+        var file = e.target.files[0];
+    
+        if (file) {
+          if (/^image\//i.test(file.type)) {
+            readFile(file, $('#UUID_FROM_SERVER_TODO').find('.player-img'));
+          } else {
+            alert('Not a valid image!');
+          }
+        }
+      });
+
+
+    
+    //This function opens the file browser to upload an image
+    function handleFile() {
+
+
+      var reader = new FileReader;
+      reader.onload = function (event) {
+          var img = new Image();
+          img.src = reader.result;
+          img.onload = function () {
+              canvas.width = img.width/3;
+              canvas.height = img.height/3;
+              ctx.drawImage(this, 0, 0, canvas.width, canvas.height);
+              // Do whatever image operation you need (resize/crop, visual effects, barcode detection, etc.+
+              invertImage(ctx, canvas);
+              // You can even upload the new image to your server
+              // postCanvasDataToServer(canvas);
+          }
+      }
+      reader.readAsDataURL(e.target.files[0]);
+  }
+
+
+    function createCard(playerInfo)
+    {
+      //{type:"Fiat", model:"500", color:"white"};
+      var template = $('#CARD_TEMPLATE');
+      var templateCopy = template.clone();
+      templateCopy.attr("id", "UUID_FROM_SERVER_TODO");
+
+      templateCopy.find('.player-name').text(playerInfo.name);
+
+      //TODO: image data, just base64 encode the image and send it via the socket
+
+      templateCopy.appendTo($('#CARD_LIST'));
+      templateCopy.on('click', null, function() {
+        cardClick($(this).find('.card'));
+      });
+      templateCopy.show();
+    }
+
 
     function cardClick(object)
     {
@@ -83,7 +147,7 @@
           console.log("TIME UPDATE!!!! " + msg);
           if(ttsEnabled)
             {
-              responsiveVoice.speak("Welcome to werewolf " + $('#PLAYER_NAME').text(), "Deutsch Female");
+              //responsiveVoice.speak("Welcome to anus werewolf " + $('#PLAYER_NAME').text(), "Deutsch Female");
             }
           
           var date = new Date(null);
@@ -101,14 +165,11 @@
       responsiveVoice.speak("");
       ttsEnabled = 1;
       console.log("TTS ENABLED")
-      var template = $('#CARD_TEMPLATE');
-      var templateCopy = template.clone();
-      templateCopy.attr("id", "UUID_FROM_SERVER_TODO");
-      templateCopy.appendTo($('#CARD_LIST'));
-      templateCopy.on('click', null, function() {
-        cardClick($(this).find('.card'));
-      });
-      templateCopy.show();
+
+      //handleFile();
+      
+
+      createCard({name:"ANUSNAME"});
 
       if (cardState == 1) {
         $(this).removeClass('flipped_front');
