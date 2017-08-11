@@ -105,7 +105,7 @@
     <div class="container py-3">
       <div class="row">
         <div class="col-md-6 mt-4">
-          <div class="card">
+          <div class="card" id="UUID_HERE">
             <div class="row ">
               <div class="col col-md-4">
                 <img src="https://placeholdit.imgix.net/~text?txtsize=38&txt=400%C3%97400&w=400&h=400" class="w-100">
@@ -150,6 +150,33 @@
   </section>
 
   <script>
+
+    //to change background color
+    /* $(function(){
+      $("body").css("background-color","black");
+    }); */
+    var activatedCard = null;
+
+    $('.card').click(function()
+    {
+      //console.log($(this));
+
+      if(activatedCard != null)
+      {
+        activatedCard.removeClass("voted_for_this_card");
+      }
+
+      $(this).addClass("voted_for_this_card");
+
+      if(activatedCard != $(this))
+      {
+        activatedCard = $(this);
+        //TODO: send to server if card changed
+      }
+
+
+    });
+
     var cardState = 0;
     $('.info-card').click(function () {
       console.log("PENI addwaS");

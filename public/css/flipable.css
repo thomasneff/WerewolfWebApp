@@ -65,3 +65,13 @@ height: 100%;
   .table th{
     vertical-align: middle !important;
   }
+
+.card{
+  background: #FFF;
+}
+
+.card.voted_for_this_card{
+
+  background-color: #F0F;
+}
+
