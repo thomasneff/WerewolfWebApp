@@ -5,10 +5,15 @@
     var activatedCard = null;
     var cardState = 0;
     var canVote = 0;
+    var ttsEnabled = 0;
+
 
     function cardClick(object)
     {
       console.log("Called with " + object);
+
+      //console.log($(this));
+      
 
       if(canVote == 0)
       {
@@ -27,17 +32,18 @@
         activatedCard = object;
         //TODO: send to server if card changed
       }
+
+
     }
 
 
-    $('.card').click(function()
+    /*$('.card').click(function()
     {
-      //console.log($(this));
-
+      
       cardClick($(this));
 
 
-    });
+    });*/
 
     function guidGenerator() {
         var S4 = function() {
@@ -49,7 +55,7 @@
 
     $(function () {
 
-      responsiveVoice.speak("Welcome to werewolf " + $('#PLAYER_NAME').text());
+      
         var socket = io();
 
         if (localStorage.hasOwnProperty("werewolfAppID")) {
@@ -75,6 +81,11 @@
 
         socket.on('time_update', function(msg){
           console.log("TIME UPDATE!!!! " + msg);
+          if(ttsEnabled)
+            {
+              responsiveVoice.speak("Welcome to werewolf " + $('#PLAYER_NAME').text(), "Deutsch Female");
+            }
+          
           var date = new Date(null);
           date.setSeconds(msg); // specify value for SECONDS here
           date = date.toISOString().substr(14, 5);
@@ -87,7 +98,9 @@
     //on clicking the image
     $('.info-card').click(function () {
       console.log("PENI addwaS");
-
+      responsiveVoice.speak("");
+      ttsEnabled = 1;
+      console.log("TTS ENABLED")
       var template = $('#CARD_TEMPLATE');
       var templateCopy = template.clone();
       templateCopy.attr("id", "UUID_FROM_SERVER_TODO");

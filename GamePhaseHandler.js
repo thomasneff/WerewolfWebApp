@@ -23,7 +23,7 @@ class GamePhaseHandler
         //important: if all people have voted before the timeout ends, we *need* to clear it
         //using clearTimeout(...)
         this.timeoutObject = setTimeout(this.nextPhase.bind(this), this.dayTimeoutSeconds * 1000);
-        this.intervalTimer = setTimeout(this.timerUpdate.bind(this), 1000);
+        this.intervalTimer = setTimeout(this.timerUpdate.bind(this), 5000);
         console.log("Starting Game: Phase " + this.phases[this.currentPhase]);
     }
 
@@ -31,7 +31,7 @@ class GamePhaseHandler
     {
         console.log("Timer Update: " + this.secondCount);
         this.io.emit('time_update', this.secondCount--);
-        this.intervalTimer = setTimeout(this.timerUpdate.bind(this), 1000);
+        this.intervalTimer = setTimeout(this.timerUpdate.bind(this), 5000);
     }
 
     handleDayEvent(sender, messageType)
