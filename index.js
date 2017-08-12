@@ -44,6 +44,21 @@ function getGamePhaseHandlerFromUUID(UUID) {
 
 io.on('connection', function (socket) {
   //console.log("CONNECTION");
+
+  //This event is received when a client selects another player (vote)
+  socket.on('player_vote', function (msg) {
+
+    if (handler != null) {
+      //handler.changePlayerDataKeyValue(msg.UUID, 'img', msg.img);
+
+      //TODO: resending everything might be a waste, maybe just send specific things which are then updated client-side?
+      // handler.broadcastPlayerData();
+
+      handler.handleVote(msg.UUID, msg);
+    }
+
+  });
+
   socket.on('join_room', function (msg) {
 
     console.log("join_room: " + msg.room + " by " + msg.UUID);
@@ -76,7 +91,11 @@ io.on('connection', function (socket) {
     if (!(msg.room in GamePhaseHandlers)) {
       console.log("Added new GamePhaseHandler for room " + msg.room)
       GamePhaseHandlers[msg.room] = new GamePhaseHandler(io.to(msg.room));
+      
     }
+
+    //add specific socket to GamePhaseHandler so we can send specific messages to each player
+    GamePhaseHandlers[msg.room].addUUIDSocket(msg.UUID, socket);
   });
 
   socket.on('name_change', function (msg) {
@@ -114,6 +133,9 @@ io.on('connection', function (socket) {
 
       //TODO: resending everything might be a waste, maybe just send specific things which are then updated client-side?
       handler.broadcastPlayerData();
+
+      //example of sending to a specific player
+      //handler.sendToPlayer(msg.UUID, 'ready_ack', {canVote: 1});
 
     }
   });

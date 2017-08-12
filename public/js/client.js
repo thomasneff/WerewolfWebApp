@@ -56,6 +56,7 @@ function updatePlayerData(playerData) {
 function changeOwnPlayerInfo(playerInfo) {
   $("#PLAYER_NAME").text(playerInfo.name);
   $('#PLAYER_NAME_INPUT').val(playerInfo.name);
+  canVote = playerInfo.canVote;
 }
 
 function createCard(playerInfo) {
@@ -155,6 +156,11 @@ $(function () {
 
   socket.on('join_ack', function (msg) {
     console.log("JOIN ACKED: " + msg);
+  });
+
+  socket.on('ready_ack', function (msg) {
+    console.log("READY ACKED: " + msg);
+    canVote = msg.canVote;
   });
 
   socket.on('chat message', function (msg) {
