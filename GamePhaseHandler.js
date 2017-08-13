@@ -114,6 +114,7 @@ class GamePhaseHandler {
     }
 
     addUUIDSocket(UUID, socket) {
+        this.checkAndCreateUUID(UUID);
         this.UUIDSocketMap[UUID] = socket;
     }
 
@@ -165,7 +166,6 @@ class GamePhaseHandler {
 
     broadcastPlayerData() {
         //on client, we just need to iterate over all UUID objects inside to get the names and stuff
-
         this.io.to(this.room).emit('player_data_update', this.playerData);
     }
 
