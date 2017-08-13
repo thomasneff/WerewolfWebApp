@@ -54,8 +54,6 @@ class GamePhaseHandler {
         //This maps from UUID to UUID, storing votes for the current phase. Gets cleared after each phase.
         //TODO: this should/could contain an object for each UUID, to enable specifics e.g. witch save/heal, ...
         this.votes = {};
-
-
         //override all settings with option parameters
 
     }
@@ -342,6 +340,7 @@ class GamePhaseHandler {
 
     //This timer just runs every second to provide a timer for the clients. Does not need to be very accurate.
     timerUpdate() {
+        
         console.log("Timer Update: " + this.secondCount);
         this.io.to(this.room).emit('time_update', this.secondCount--);
         this.intervalTimer = setTimeout(this.timerUpdate.bind(this), 1000);

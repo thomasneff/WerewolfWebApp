@@ -104,6 +104,12 @@ function createCard(playerInfo) {
   templateCopy.show();
 }
 
+function Speak(SpeakInfo) {
+console.log("Speak with language:"+SpeakInfo.Language);
+console.log("\r\n And Text:"+SpeakInfo.Text);
+responsiveVoice.speak(SpeakInfo.Text, SpeakInfo.Language);
+}
+
 
 function cardClick(object) {
   console.log("Called with " + object);
@@ -183,8 +189,6 @@ function guidGenerator() {
 $(function () {
 
 
-
-
   if (localStorage.hasOwnProperty("werewolfAppID")) {
     clientUUID = localStorage.getItem("werewolfAppID")
     socket.emit('start_blabla', clientUUID);
@@ -197,7 +201,6 @@ $(function () {
     socket.emit('start_blabla', clientUUID);
     console.log("TEST2 " + clientUUID);
   }
-
 
   socket.emit('client_connect', { UUID: clientUUID });
 
@@ -216,6 +219,11 @@ $(function () {
 
   socket.on('player_data_update', function (msg) {
     updatePlayerData(msg);
+  });
+
+  socket.on('player_speak', function (msg) {
+    console.log("SPEAK");
+    Speak(msg);
   });
 
 
@@ -241,11 +249,9 @@ $('.info-card').click(function () {
   responsiveVoice.speak("");
   ttsEnabled = 1;
   console.log("TTS ENABLED")
-
   //handleFile();
+  //createCard({ name: "ANUSNAME" });
 
-
-  createCard({ name: "ANUSNAME" });
 
   if (cardState == 1) {
     $(this).removeClass('flipped_front');
