@@ -13,7 +13,7 @@ class GamePhaseHandler {
 
 
 
-    constructor(io, roomName) {
+    constructor(io, options) {
         //TODO: should "Day" and "vote_kill" be separate? In the game, it is, but I think we could also just make it so that voting is enabled the whole Day.
         //      but for narration events it might make sense. We can still add them later, however.
         this.phases = ["Day", "Werewolves"]
@@ -22,18 +22,18 @@ class GamePhaseHandler {
         this.phaseTimeouts = {
             "Day": 300,
             "Werewolves": 10
-        }
+        } || options.phaseTimeouts;
 
         //This contains the number of each of the special roles. For convenience, the attributes are *exactly* the same as the internal role names
         this.roleConfig = {
             "Werewolf": 1,
             "Witch": 0,
             "Seer": 0, //etc... Townspeople are always all the remaining players
-        }
+        } || options.roleConfig;
 
         this.timeoutObject = null;
 
-        this.roomName = roomName;
+        this.room = options.room;
 
         //This is the socket for the whole room
         this.io = io;
@@ -54,6 +54,10 @@ class GamePhaseHandler {
         //This maps from UUID to UUID, storing votes for the current phase. Gets cleared after each phase.
         //TODO: this should/could contain an object for each UUID, to enable specifics e.g. witch save/heal, ...
         this.votes = {};
+
+
+        //override all settings with option parameters
+
     }
 
     printAllUUIDS() {
@@ -69,7 +73,7 @@ class GamePhaseHandler {
         if (!(UUID in this.playerData)) {
             //make new object for UUID if it doesn't exist yet
             //NOTE: here we can also do initialization for new players for internal state variables
-            this.playerData[UUID] = { canVote: 0, role: 'Townsperson', UUID: UUID };
+            this.playerData[UUID] = { canVote: 0, role: 'Townsperson', UUID: UUID, roomName: this.room };
         }
     }
 
@@ -161,7 +165,8 @@ class GamePhaseHandler {
 
     broadcastPlayerData() {
         //on client, we just need to iterate over all UUID objects inside to get the names and stuff
-        this.io.to(this.roomName).emit('player_data_update', this.playerData);
+
+        this.io.to(this.room).emit('player_data_update', this.playerData);
     }
 
 
@@ -185,7 +190,7 @@ class GamePhaseHandler {
     }
     */
     getRoomName() {
-        return this.roomName;
+        return this.room;
     }
 
     //This initializes the special roles according to this.roleConfig
@@ -338,7 +343,7 @@ class GamePhaseHandler {
     //This timer just runs every second to provide a timer for the clients. Does not need to be very accurate.
     timerUpdate() {
         console.log("Timer Update: " + this.secondCount);
-        this.io.to(this.roomName).emit('time_update', this.secondCount--);
+        this.io.to(this.room).emit('time_update', this.secondCount--);
         this.intervalTimer = setTimeout(this.timerUpdate.bind(this), 1000);
     }
 

@@ -62,15 +62,54 @@ io.on('connection', function (socket) {
 
       //TODO: resending everything might be a waste, maybe just send specific things which are then updated client-side?
       // handler.broadcastPlayerData();
-      handler.printAllUUIDS();
+      //handler.printAllUUIDS();
       handler.handleVote(msg.UUID, msg);
     }
+
+  });
+
+  socket.on('client_connect', function (msg) {
+
+    console.log("client_connect by " + msg.UUID);
+    //TODO: check if client was already connected, resend necessary info if that is the case
+    if (msg.UUID in UUIDSocketMap && msg.UUID in UUIDRoomMap) {
+      //check if we were already connected.
+      console.log("Was already connected, just resending data.");
+      //TODO/HACK: might want to remove this, just for now, I send them their playerdata back, we can probably use this though.
+      //Reconnect scenario: client should just check the response, and if the roomName is there, send a join, update UI
+      var handler = getGamePhaseHandlerFromUUID(msg.UUID);
+
+      if (handler != null) {
+
+        //handler.printAllUUIDS();
+        //TODO: resending everything might be a waste, maybe just send specific things which are then updated client-side?
+        handler.broadcastPlayerData();
+
+      }
+      return;
+    }
+
+
+    //We were not connected, so just allocate the server-side stuff
+    //TODO: send them a list of rooms with name, host-image, number of players
+    UUIDSocketMap[msg.UUID] = socket;
+    //UUIDRoomMap[msg.UUID] = msg.room;
+
+
+    //Make them join a room which is reserved for the room list
+    socket.join("ROOM_LIST_ROOM_WHICH_CAN_NOT_BE_SELECTED_AS_A_NAME_BY_ANY_HOST");
+    console.log("Socket with UUID " + msg.UUID + " joined room list!");
 
   });
 
   socket.on('join_room', function (msg) {
 
     console.log("join_room: " + msg.room + " by " + msg.UUID);
+
+    if (!(msg.room in GamePhaseHandlers)) {
+      console.log("Cannot join room " + msg.room + " as it doesn't exist. By UUID " + msg.UUID);
+      return;
+    }
 
 
     if (msg.UUID in UUIDSocketMap && msg.UUID in UUIDRoomMap) {
@@ -81,7 +120,7 @@ io.on('connection', function (socket) {
 
       if (handler != null) {
 
-        handler.printAllUUIDS();
+        //handler.printAllUUIDS();
         //TODO: resending everything might be a waste, maybe just send specific things which are then updated client-side?
         handler.broadcastPlayerData();
 
@@ -91,6 +130,7 @@ io.on('connection', function (socket) {
     }
 
     //If we were not in the room, but trying to join, we need to check if the game is already running.
+    //This should probably never happen unless someone uses the browser console to send join events to specific games.
     if (msg.room in GamePhaseHandlers) {
       if (msg.room in RoomGameStarted) {
         if (RoomGameStarted[msg.room] != 0) {
@@ -101,44 +141,73 @@ io.on('connection', function (socket) {
       }
     }
 
-    UUIDSocketMap[msg.UUID] = socket;
+    //UUIDSocketMap[msg.UUID] = socket;
     UUIDRoomMap[msg.UUID] = msg.room;
+    socket.leaveAll();
     socket.join(msg.room);
-    console.log("SOCKET " + msg.UUID + " JOINED ROOM " + msg.room);
+    console.log("Socket with UUID " + msg.UUID + " joined room " + msg.room);
+
+    //console.log("Connected clients: " + io.sockets.clients(msg.room));
 
     //NOTE: if you want to send a message to just a specific room, use this
     //io.to(msg.room).emit("join_ack", "JOIN ACKED SERVER BLA");
 
-    //TODO: this should be done when creating the room with all config options by the host, not when joining. (REFACTOR TO CREATE AND JOIN)
-    //TODO: we also shouldn't be able to join a room which doesn't exist (REFACTOR TO CREATE AND JOIN)
-    if (!(msg.room in GamePhaseHandlers)) {
-      console.log("Added new GamePhaseHandler for room " + msg.room)
-      GamePhaseHandlers[msg.room] = new GamePhaseHandler(io, msg.room);
 
-    }
 
 
     //add specific socket to GamePhaseHandler so we can send specific messages to each player
     GamePhaseHandlers[msg.room].addUUIDSocket(msg.UUID, socket);
 
-    GamePhaseHandlers[msg.room].printAllUUIDS();
+    //GamePhaseHandlers[msg.room].printAllUUIDS();
     //broadcast initial state so all players get stuff upon connecting
     GamePhaseHandlers[msg.room].broadcastPlayerData();
   });
 
+  socket.on('create_room', function (msg) {
+
+    //msg has to contain the different options for the game
+
+    //Check if room already exists or is reserved for room list
+    if (msg.room in GamePhaseHandlers) {
+      console.log("Tried to create room which already exists: " + msg.room + " by " + msg.UUID);
+      return;
+    }
+
+    if (msg.room == "ROOM_LIST_ROOM_WHICH_CAN_NOT_BE_SELECTED_AS_A_NAME_BY_ANY_HOST") {
+      console.log("Tried to create reserved room: " + msg.room + " by " + msg.UUID);
+      return;
+    }
+
+    //TODO: this should be done when creating the room with all config options by the host, not when joining. (REFACTOR TO CREATE AND JOIN)
+    //TODO: we also shouldn't be able to join a room which doesn't exist (REFACTOR TO CREATE AND JOIN)
+    if (!(msg.room in GamePhaseHandlers)) {
+      console.log("Added new GamePhaseHandler for room " + msg.room)
+      GamePhaseHandlers[msg.room] = new GamePhaseHandler(io, msg);
+
+    }
+  });
+
   socket.on('name_change', function (msg) {
-    console.log("name_change: " + msg.name + " by " + msg.UUID);
+    
+    
+    
+   
 
     var handler = getGamePhaseHandlerFromUUID(msg.UUID);
 
     if (handler != null) {
+      console.log("name_change: " + msg.name + " by " + msg.UUID);
       handler.changePlayerDataKeyValue(msg.UUID, 'name', msg.name);
 
-      handler.printAllUUIDS();
+      //handler.printAllUUIDS();
       //TODO: resending everything might be a waste, maybe just send specific things which are then updated client-side?
       handler.broadcastPlayerData();
 
     }
+    else
+      {
+        console.log("Game is not started yet, cannot change name by " + msg.UUID);
+      }
 
   });
 
@@ -148,7 +217,7 @@ io.on('connection', function (socket) {
     if (handler != null) {
       handler.changePlayerDataKeyValue(msg.UUID, 'img', msg.img);
 
-      handler.printAllUUIDS();
+      //handler.printAllUUIDS();
       //TODO: resending everything might be a waste, maybe just send specific things which are then updated client-side?
       handler.broadcastPlayerData();
 
@@ -161,7 +230,7 @@ io.on('connection', function (socket) {
     if (handler != null) {
       handler.changePlayerDataKeyValue(msg.UUID, 'ready', msg.ready);
 
-      handler.printAllUUIDS();
+      //handler.printAllUUIDS();
       //TODO: resending everything might be a waste, maybe just send specific things which are then updated client-side?
       handler.broadcastPlayerData();
 

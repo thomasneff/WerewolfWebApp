@@ -1,4 +1,4 @@
-Factor Room creation and joining into separate actions. (Just use temp buttons on client side for this)
+Replace ugly image file upload button with player-data clickable image, maybe at the side of the player name
 
 Finish Voting implementation with results.
   - Maybe just aggregate the votes and store the result, the 'effect' happens in a different phase

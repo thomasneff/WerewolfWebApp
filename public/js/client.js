@@ -73,7 +73,7 @@ function createCard(playerInfo) {
   templateCopy.find('.player-img').attr("src", playerInfo.img);
   console.log("PLAYERINFO UUID: " + playerInfo.UUID);
   console.log("CARD ATTR ID before: " + templateCopy.find('.card').attr("id"));
-  templateCopy.find('.card').attr("id",  playerInfo.UUID);
+  templateCopy.find('.card').attr("id", playerInfo.UUID);
   console.log("CARD ATTR ID after: " + templateCopy.find('.card').attr("id"));
   //TODO: image data, just base64 encode the image and send it via the socket
 
@@ -106,7 +106,7 @@ function cardClick(object) {
     activatedCard = object;
     //TODO/DONE: send to server if card changed
     //we always have to send our own UUID, that's why we also send a voteUUID as well
-    socket.emit("player_vote", {UUID: clientUUID, voteUUID: object.attr('id')});
+    socket.emit("player_vote", { UUID: clientUUID, voteUUID: object.attr('id') });
   }
 
 
@@ -119,6 +119,27 @@ $('#READY_BUTTON').click(function () {
   socket.emit('ready', { UUID: clientUUID, ready: 1 });
   socket.emit('start', { UUID: clientUUID });
 
+});
+
+//Join Button
+$('#JOIN_BUTTON').click(function () {
+  console.log("JOIN PRESSED");
+
+  socket.emit('join_room', { UUID: clientUUID, room: 'test_room' });
+});
+
+//Create Button
+$('#CREATE_BUTTON').click(function () {
+  console.log("CREATE PRESSED");
+
+  socket.emit('create_room', {
+    UUID: clientUUID,
+    room: 'test_room',
+    phaseTimeouts: {
+      "Day": 30,
+      "Werewolves": 10
+    }
+  });
 });
 
 //Input Text Box
@@ -161,8 +182,8 @@ $(function () {
     console.log("TEST2 " + clientUUID);
   }
 
-  socket.emit('join_room', { UUID: clientUUID, room: 'test_room' });
-  socket.emit('start', { UUID: clientUUID });
+
+  socket.emit('client_connect', { UUID: clientUUID });
 
   socket.on('join_ack', function (msg) {
     console.log("JOIN ACKED: " + msg);
