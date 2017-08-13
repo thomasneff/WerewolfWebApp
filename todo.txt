@@ -1,6 +1,12 @@
-Make sure the highlighted Vote stays when client refreshes (store on server so client receives it again)
+Replace ugly image file upload button with player-data clickable image, maybe at the side of the player name 
+(see https://stackoverflow.com/a/18803568 )
 
-Replace ugly image file upload button with player-data clickable image, maybe at the side of the player name
+Maybe refactor playerData in GamePhaseHandler into playerData and playerDataSecret?
+  - For roles, currentVote
+  - Would need to add additional functionality to broadcastPlayerData, which sends each secret playerData to the specific socket in UUIDSocketMap
+  - Would also need to replace all instances of secret data (e.g. roles, currentVote) with the other datastructure
+  - Would need to make an additional event e.g. "secret_player_data_update" which has to be handled on client-side as well.
+
 
 Finish Voting implementation with results.
   - Maybe just aggregate the votes and store the result, the 'effect' happens in a different phase

@@ -39,6 +39,7 @@ function updatePlayerData(playerData) {
 
   //iterate over all things in playerData
   for (var key in playerData) {
+    console.log("Key " + key);
     if (playerData.hasOwnProperty(key)) {
       var obj = playerData[key];
 
@@ -54,7 +55,26 @@ function updatePlayerData(playerData) {
     }
   }
 
+  //also highlight currentVote card
+  console.log("PLAYERDATA " + playerData);
+  console.log("PLAYERDATA[CLIENTUUID] " + playerData[clientUUID]);
+
+  if ("currentVote" in playerData[clientUUID]) {
+    highlightCard($("#" + playerData[clientUUID].currentVote));
+  }
+
+
 }
+
+function highlightCard(object) {
+
+  if (activatedCard != null) {
+    activatedCard.removeClass("voted_for_this_card");
+  }
+
+  object.addClass("voted_for_this_card");
+}
+
 
 function changeOwnPlayerInfo(playerInfo) {
   $("#PLAYER_NAME").text(playerInfo.name);
@@ -71,10 +91,10 @@ function createCard(playerInfo) {
 
   templateCopy.find('.player-name').text(playerInfo.name);
   templateCopy.find('.player-img').attr("src", playerInfo.img);
-  console.log("PLAYERINFO UUID: " + playerInfo.UUID);
-  console.log("CARD ATTR ID before: " + templateCopy.find('.card').attr("id"));
+  //console.log("PLAYERINFO UUID: " + playerInfo.UUID);
+  //console.log("CARD ATTR ID before: " + templateCopy.find('.card').attr("id"));
   templateCopy.find('.card').attr("id", playerInfo.UUID);
-  console.log("CARD ATTR ID after: " + templateCopy.find('.card').attr("id"));
+  //console.log("CARD ATTR ID after: " + templateCopy.find('.card').attr("id"));
   //TODO: image data, just base64 encode the image and send it via the socket
 
   templateCopy.appendTo($('#GENERATED_CARDS'));
@@ -96,11 +116,7 @@ function cardClick(object) {
     return;
   }
 
-  if (activatedCard != null) {
-    activatedCard.removeClass("voted_for_this_card");
-  }
-
-  object.addClass("voted_for_this_card");
+  highlightCard(object);
 
   if (activatedCard != object) {
     activatedCard = object;
