@@ -1,3 +1,5 @@
+Make sure the highlighted Vote stays when client refreshes (store on server so client receives it again)
+
 Replace ugly image file upload button with player-data clickable image, maybe at the side of the player name
 
 Finish Voting implementation with results.
