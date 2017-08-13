@@ -1,5 +1,4 @@
-
-When Game is already started, block room joining on server side. (Just out of safety, UI should never allow that.)
+Factor Room creation and joining into separate actions. (Just use temp buttons on client side for this)
 
 Finish Voting implementation with results.
   - Maybe just aggregate the votes and store the result, the 'effect' happens in a different phase

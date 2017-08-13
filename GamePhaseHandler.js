@@ -12,8 +12,8 @@ class GamePhaseHandler {
     */
 
 
-    
-    constructor(socket) {
+
+    constructor(io, roomName) {
         //TODO: should "Day" and "vote_kill" be separate? In the game, it is, but I think we could also just make it so that voting is enabled the whole Day.
         //      but for narration events it might make sense. We can still add them later, however.
         this.phases = ["Day", "Werewolves"]
@@ -33,8 +33,13 @@ class GamePhaseHandler {
 
         this.timeoutObject = null;
 
+        this.roomName = roomName;
+
         //This is the socket for the whole room
-        this.socket = socket;
+        this.io = io;
+
+        //This is just a flag which gets set when the game is started so noone can join.
+        this.gameStarted = 0;
 
         //This is just for displaying the current timer to the clients.
         this.intervalTimer = null;
@@ -51,8 +56,7 @@ class GamePhaseHandler {
         this.votes = {};
     }
 
-    printAllUUIDS()
-    {
+    printAllUUIDS() {
         for (var UUID in this.playerData) {
             if (this.playerData.hasOwnProperty(UUID)) {
                 console.log("ALL_UUIDS: " + UUID);
@@ -93,7 +97,7 @@ class GamePhaseHandler {
         //console.log("BEFORE")
         //this.printAllUUIDS();
         //console.log("WANT TO CHANGE ATTRIBUTE OF " + UUID);
-        
+
 
         this.checkAndCreateUUID(UUID);
         //console.log("AFTER CHECK AND CREATE");
@@ -114,10 +118,9 @@ class GamePhaseHandler {
     setDataKeyForeachRole(key, value, role) {
         for (var UUID in this.playerData) {
 
-            if(UUID == undefined)
-                {
-                    console.log("OMGOMGOMGOMGOMG 1");
-                }
+            if (UUID == undefined) {
+                console.log("OMGOMGOMGOMGOMG 1");
+            }
 
             if (this.playerData.hasOwnProperty(UUID)) {
 
@@ -132,10 +135,9 @@ class GamePhaseHandler {
                 if (role == "ALL_ROLES" || obj.role == role) {
                     obj[key] = value;
                     console.log("Set " + key + " of " + UUID + " to " + value);
-                    if(UUID == undefined)
-                        {
-                            console.log("OMGOMGOMGOMGOMG 6");
-                        }
+                    if (UUID == undefined) {
+                        console.log("OMGOMGOMGOMGOMG 6");
+                    }
                 }
 
 
@@ -159,7 +161,7 @@ class GamePhaseHandler {
 
     broadcastPlayerData() {
         //on client, we just need to iterate over all UUID objects inside to get the names and stuff
-        this.socket.emit('player_data_update', this.playerData);
+        this.io.to(this.roomName).emit('player_data_update', this.playerData);
     }
 
 
@@ -177,39 +179,45 @@ class GamePhaseHandler {
         this.intervalTimer = setTimeout(this.timerUpdate.bind(this), 1000);
     }
 
+    /*setRoomName(roomName)
+    {
+        this.roomName = roomName;
+    }
+    */
+    getRoomName() {
+        return this.roomName;
+    }
 
     //This initializes the special roles according to this.roleConfig
-    initSpecialRoles()
-    {
+    initSpecialRoles() {
         //TODO: for each random role, draw a player from a shuffled list of UUIDs and assign it to them, then remove from the list. If list empty -> done
         console.log("Initializing roles!");
         //shuffle function, is only needed here
         function shuffle(array) {
             var currentIndex = array.length, temporaryValue, randomIndex;
-          
+
             // While there remain elements to shuffle...
             while (0 !== currentIndex) {
-          
-              // Pick a remaining element...
-              randomIndex = Math.floor(Math.random() * currentIndex);
-              currentIndex -= 1;
-          
-              // And swap it with the current element.
-              temporaryValue = array[currentIndex];
-              array[currentIndex] = array[randomIndex];
-              array[randomIndex] = temporaryValue;
+
+                // Pick a remaining element...
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex -= 1;
+
+                // And swap it with the current element.
+                temporaryValue = array[currentIndex];
+                array[currentIndex] = array[randomIndex];
+                array[randomIndex] = temporaryValue;
             }
-          
+
             return array;
-          }
+        }
 
         //Create array of UUIDs:
         var UUIDList = [];
         for (var UUID in this.playerData) {
-            if(UUID == undefined)
-                {
-                    console.log("OMGOMGOMGOMGOMG 2");
-                }
+            if (UUID == undefined) {
+                console.log("OMGOMGOMGOMGOMG 2");
+            }
             if (this.playerData.hasOwnProperty(UUID)) {
                 UUIDList.push(UUID);
                 console.log("Adding UUID " + UUID + " to role assignment!");
@@ -229,29 +237,26 @@ class GamePhaseHandler {
                 //role == "Werewolf", this.roleConfig[role] == 2
 
                 //Iterate over number of roles
-                for(var numRole = 0; numRole < this.roleConfig[role]; numRole++)
-                    {
-                        if(UUIDList.length == 0)
-                            {
-                                console.log("All players have roles, stopping now!");
-                                //this.printAllUUIDS();
-                                return;
-                            }
-        
-                        //Get random player
-                        var playerUUID = UUIDList.pop();
-
-                        if(playerUUID == undefined)
-                            {
-                                console.log("OMGOMGOMGOMGOMG 3");
-                            }
-        
-                        this.playerData[playerUUID].role = role;
-                        console.log("Set role of " + playerUUID + " to " + role);
+                for (var numRole = 0; numRole < this.roleConfig[role]; numRole++) {
+                    if (UUIDList.length == 0) {
+                        console.log("All players have roles, stopping now!");
                         //this.printAllUUIDS();
+                        return;
                     }
 
-                
+                    //Get random player
+                    var playerUUID = UUIDList.pop();
+
+                    if (playerUUID == undefined) {
+                        console.log("OMGOMGOMGOMGOMG 3");
+                    }
+
+                    this.playerData[playerUUID].role = role;
+                    console.log("Set role of " + playerUUID + " to " + role);
+                    //this.printAllUUIDS();
+                }
+
+
             }
         }
 
@@ -259,18 +264,21 @@ class GamePhaseHandler {
 
     startGame() {
 
+
+
+
         //iterate over all things in playerData and check if everyone is ready.
         var any_data = false;
+
 
         var not_all_connected_error = function () {
             console.log('Cannot start game, not all players are ready!');
         }
 
         for (var UUID in this.playerData) {
-            if(UUID == undefined)
-                {
-                    console.log("OMGOMGOMGOMGOMG 4");
-                }
+            if (UUID == undefined) {
+                console.log("OMGOMGOMGOMGOMG 4");
+            }
             any_data = true;
             if (this.playerData.hasOwnProperty(UUID)) {
 
@@ -292,12 +300,15 @@ class GamePhaseHandler {
             return;
         }
 
+
+        this.gameStarted = 1;
+
         //TODO/DONE: assign roles using some configurable settings object in class (using sensible default values)
         this.initSpecialRoles();
 
         this.setDataKeyForeachRole('canVote', 0, 'ALL_ROLES');
 
-        
+
 
         //night start
         //TODO: use something else, keeping this index feels lame
@@ -327,7 +338,7 @@ class GamePhaseHandler {
     //This timer just runs every second to provide a timer for the clients. Does not need to be very accurate.
     timerUpdate() {
         console.log("Timer Update: " + this.secondCount);
-        this.socket.emit('time_update', this.secondCount--);
+        this.io.to(this.roomName).emit('time_update', this.secondCount--);
         this.intervalTimer = setTimeout(this.timerUpdate.bind(this), 1000);
     }
 
@@ -335,11 +346,11 @@ class GamePhaseHandler {
         console.log("UUID " + UUID + " voted during Day! " + msg.voteUUID);
         //console.log("BEFORE CHANGE IN HANDLEDAY");
         //this.printAllUUIDS();
-        
+
         this.changePlayerDataKeyValue(UUID, "currentVote", msg.voteUUID);
         //console.log("AFTER CHANGE IN HANDLEDAY");
         //this.printAllUUIDS();
-        
+
     }
 
     handleWerewolvesVote(UUID, msg) {
@@ -380,6 +391,10 @@ class GamePhaseHandler {
                 this.handleUnknownVote(this.currentPhaseString(), UUID, msg);
                 break;
         }
+    }
+
+    isGameStarted() {
+        return this.gameStarted;
     }
 
     startPhase(phase) {

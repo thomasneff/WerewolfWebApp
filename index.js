@@ -18,6 +18,9 @@ var GamePhaseHandlers = {};
 var UUIDSocketMap = {}
 var UUIDRoomMap = {}
 
+//Maps from roomID -> 0/1, depending on if the game is already started.
+var RoomGameStarted = {}
+
 
 app.get('/', function (req, res) {
   //res.sendFile(__dirname + '/index.html');
@@ -41,6 +44,12 @@ function getGamePhaseHandlerFromUUID(UUID) {
   return GamePhaseHandlers[room_id];
 }
 
+function guidGenerator() {
+  var S4 = function () {
+    return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
+  };
+  return (S4() + S4() + "-" + S4() + "-" + S4() + "-" + S4() + "-" + S4() + S4() + S4());
+}
 
 io.on('connection', function (socket) {
   //console.log("CONNECTION");
@@ -64,37 +73,51 @@ io.on('connection', function (socket) {
     console.log("join_room: " + msg.room + " by " + msg.UUID);
 
 
-    if(msg.UUID in UUIDSocketMap && msg.UUID in UUIDRoomMap)
-      {
-        //check if we were already connected.
-        console.log("Was already connected, just resending data.");
-        //TODO/HACK: remove this, just for now, I send them their playerdata back.
-        var handler = getGamePhaseHandlerFromUUID(msg.UUID);
-        
-            if (handler != null) {
-              
-              handler.printAllUUIDS();
-              //TODO: resending everything might be a waste, maybe just send specific things which are then updated client-side?
-              handler.broadcastPlayerData();
-        
-            }
+    if (msg.UUID in UUIDSocketMap && msg.UUID in UUIDRoomMap) {
+      //check if we were already connected.
+      console.log("Was already connected, just resending data.");
+      //TODO/HACK: remove this, just for now, I send them their playerdata back.
+      var handler = getGamePhaseHandlerFromUUID(msg.UUID);
 
-        return;
+      if (handler != null) {
+
+        handler.printAllUUIDS();
+        //TODO: resending everything might be a waste, maybe just send specific things which are then updated client-side?
+        handler.broadcastPlayerData();
+
       }
+
+      return;
+    }
+
+    //If we were not in the room, but trying to join, we need to check if the game is already running.
+    if (msg.room in GamePhaseHandlers) {
+      if (msg.room in RoomGameStarted) {
+        if (RoomGameStarted[msg.room] != 0) {
+          console.log("Game in room " + msg.room + " is already running, can not join! Will join random room UUID: " + msg.UUID);
+          socket.join(guidGenerator());
+          return;
+        }
+      }
+    }
 
     UUIDSocketMap[msg.UUID] = socket;
     UUIDRoomMap[msg.UUID] = msg.room;
     socket.join(msg.room);
+    console.log("SOCKET " + msg.UUID + " JOINED ROOM " + msg.room);
 
     //NOTE: if you want to send a message to just a specific room, use this
     //io.to(msg.room).emit("join_ack", "JOIN ACKED SERVER BLA");
 
+    //TODO: this should be done when creating the room with all config options by the host, not when joining. (REFACTOR TO CREATE AND JOIN)
+    //TODO: we also shouldn't be able to join a room which doesn't exist (REFACTOR TO CREATE AND JOIN)
     if (!(msg.room in GamePhaseHandlers)) {
       console.log("Added new GamePhaseHandler for room " + msg.room)
-      GamePhaseHandlers[msg.room] = new GamePhaseHandler(io.to(msg.room));
+      GamePhaseHandlers[msg.room] = new GamePhaseHandler(io, msg.room);
+
     }
 
-    
+
     //add specific socket to GamePhaseHandler so we can send specific messages to each player
     GamePhaseHandlers[msg.room].addUUIDSocket(msg.UUID, socket);
 
@@ -152,25 +175,24 @@ io.on('connection', function (socket) {
   socket.on('start', function (msg) {
     var handler = getGamePhaseHandlerFromUUID(msg.UUID);
 
+
     if (handler != null) {
-      
+
+      if (handler.isGameStarted()) {
+        console.log("Game is already started, can not start it again! " + msg.UUID);
+        return;
+      }
+
 
       handler.startGame();
+
+      //We need this so we can check if a game is running while someone wants to join
+      //as the join event needs to block new people server-side.
+      RoomGameStarted[handler.getRoomName()] = handler.isGameStarted();
 
     }
   });
 
-  socket.on('NOT_IMPLEMENTED_YET', function (msg) {
-
-    console.log("start: " + msg.UUID);
-
-    var handler = getGamePhaseHandlerFromUUID(msg.UUID);
-
-    if (handler != null) {
-      handler.startGame();
-    }
-
-  });
 
 });
 
