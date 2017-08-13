@@ -4,28 +4,31 @@ class GamePhaseHandler {
     /*
         ROLES:
 
-        werewolf,
-        townsperson
+        Werewolf,
+        Townsperson,
 
 
         ALL_ROLES -> used by setDataKeyForeachRole to change stuff for everyone.
     */
 
+
+    
     constructor(socket) {
-        //TODO: should "day" and "vote_kill" be separate? In the game, it is, but I think we could also just make it so that voting is enabled the whole day.
+        //TODO: should "Day" and "vote_kill" be separate? In the game, it is, but I think we could also just make it so that voting is enabled the whole Day.
         //      but for narration events it might make sense. We can still add them later, however.
-        this.phases = ["day", "werewolves"]
-        this.currentPhase = 0;
+        this.phases = ["Day", "Werewolves"]
+        this.currentPhase = 1;
         //this.phaseTimeouts = 3; // for testing, 3 seconds. Should be configurable or 5 minutes or something (300 seconds)
         this.phaseTimeouts = {
-            "day": 300,
-            "werewolves": 10
+            "Day": 300,
+            "Werewolves": 10
         }
 
-        this.config = {
-            "numWerewolves": 2,
-            "numWitches": 0,
-            "numSeer": 0, //etc... Townspeople are always all the remaining players
+        //This contains the number of each of the special roles. For convenience, the attributes are *exactly* the same as the internal role names
+        this.roleConfig = {
+            "Werewolf": 1,
+            "Witch": 0,
+            "Seer": 0, //etc... Townspeople are always all the remaining players
         }
 
         this.timeoutObject = null;
@@ -48,12 +51,21 @@ class GamePhaseHandler {
         this.votes = {};
     }
 
+    printAllUUIDS()
+    {
+        for (var UUID in this.playerData) {
+            if (this.playerData.hasOwnProperty(UUID)) {
+                console.log("ALL_UUIDS: " + UUID);
+            }
+        }
+    }
+
 
     checkAndCreateUUID(UUID) {
         if (!(UUID in this.playerData)) {
             //make new object for UUID if it doesn't exist yet
             //NOTE: here we can also do initialization for new players for internal state variables
-            this.playerData[UUID] = { canVote: 0, role: 'townsperson' };
+            this.playerData[UUID] = { canVote: 0, role: 'Townsperson', UUID: UUID };
         }
     }
 
@@ -78,10 +90,19 @@ class GamePhaseHandler {
     } */
 
     changePlayerDataKeyValue(UUID, key, value) {
+        //console.log("BEFORE")
+        //this.printAllUUIDS();
+        //console.log("WANT TO CHANGE ATTRIBUTE OF " + UUID);
+        
+
         this.checkAndCreateUUID(UUID);
+        //console.log("AFTER CHECK AND CREATE");
+        //this.printAllUUIDS();
 
         this.playerData[UUID][key] = value;
         console.log("Player attribute " + key + " changed to " + value + " (UUID: " + UUID + ")");
+
+        //this.printAllUUIDS();
     }
 
     addUUIDSocket(UUID, socket) {
@@ -92,6 +113,12 @@ class GamePhaseHandler {
     //Can be e.g. used to set canVote for Werewolves.
     setDataKeyForeachRole(key, value, role) {
         for (var UUID in this.playerData) {
+
+            if(UUID == undefined)
+                {
+                    console.log("OMGOMGOMGOMGOMG 1");
+                }
+
             if (this.playerData.hasOwnProperty(UUID)) {
 
                 var obj = this.playerData[UUID];
@@ -105,6 +132,10 @@ class GamePhaseHandler {
                 if (role == "ALL_ROLES" || obj.role == role) {
                     obj[key] = value;
                     console.log("Set " + key + " of " + UUID + " to " + value);
+                    if(UUID == undefined)
+                        {
+                            console.log("OMGOMGOMGOMGOMG 6");
+                        }
                 }
 
 
@@ -135,15 +166,95 @@ class GamePhaseHandler {
     resetTimers() {
         clearTimeout(this.timeoutObject);
         clearTimeout(this.intervalTimer);
-        secondCount = 0;
+        this.secondCount = 0;
     }
 
 
     setTimersForCurrentPhase() {
         var phaseTime = this.phaseTimeouts[this.currentPhaseString()];
         this.timeoutObject = setTimeout(this.nextPhase.bind(this), phaseTime * 1000);
-        this.secondCount = phaseTime;
+        this.secondCount = phaseTime - 1;
         this.intervalTimer = setTimeout(this.timerUpdate.bind(this), 1000);
+    }
+
+
+    //This initializes the special roles according to this.roleConfig
+    initSpecialRoles()
+    {
+        //TODO: for each random role, draw a player from a shuffled list of UUIDs and assign it to them, then remove from the list. If list empty -> done
+        console.log("Initializing roles!");
+        //shuffle function, is only needed here
+        function shuffle(array) {
+            var currentIndex = array.length, temporaryValue, randomIndex;
+          
+            // While there remain elements to shuffle...
+            while (0 !== currentIndex) {
+          
+              // Pick a remaining element...
+              randomIndex = Math.floor(Math.random() * currentIndex);
+              currentIndex -= 1;
+          
+              // And swap it with the current element.
+              temporaryValue = array[currentIndex];
+              array[currentIndex] = array[randomIndex];
+              array[randomIndex] = temporaryValue;
+            }
+          
+            return array;
+          }
+
+        //Create array of UUIDs:
+        var UUIDList = [];
+        for (var UUID in this.playerData) {
+            if(UUID == undefined)
+                {
+                    console.log("OMGOMGOMGOMGOMG 2");
+                }
+            if (this.playerData.hasOwnProperty(UUID)) {
+                UUIDList.push(UUID);
+                console.log("Adding UUID " + UUID + " to role assignment!");
+            }
+        }
+
+        //Randomize
+        UUIDList = shuffle(UUIDList);
+
+
+        //this.printAllUUIDS();
+        //foreach role in this.roleConfig
+        for (var role in this.roleConfig) {
+            if (this.roleConfig.hasOwnProperty(role)) {
+
+                //Example:
+                //role == "Werewolf", this.roleConfig[role] == 2
+
+                //Iterate over number of roles
+                for(var numRole = 0; numRole < this.roleConfig[role]; numRole++)
+                    {
+                        if(UUIDList.length == 0)
+                            {
+                                console.log("All players have roles, stopping now!");
+                                //this.printAllUUIDS();
+                                return;
+                            }
+        
+                        //Get random player
+                        var playerUUID = UUIDList.pop();
+
+                        if(playerUUID == undefined)
+                            {
+                                console.log("OMGOMGOMGOMGOMG 3");
+                            }
+        
+                        this.playerData[playerUUID].role = role;
+                        console.log("Set role of " + playerUUID + " to " + role);
+                        //this.printAllUUIDS();
+                    }
+
+                
+            }
+        }
+
     }
 
     startGame() {
@@ -156,6 +267,10 @@ class GamePhaseHandler {
         }
 
         for (var UUID in this.playerData) {
+            if(UUID == undefined)
+                {
+                    console.log("OMGOMGOMGOMGOMG 4");
+                }
             any_data = true;
             if (this.playerData.hasOwnProperty(UUID)) {
 
@@ -177,20 +292,34 @@ class GamePhaseHandler {
             return;
         }
 
-        //TODO: assign roles using some configurable settings object in class (using sensible default values)
+        //TODO/DONE: assign roles using some configurable settings object in class (using sensible default values)
+        this.initSpecialRoles();
 
         this.setDataKeyForeachRole('canVote', 0, 'ALL_ROLES');
 
+        
+
         //night start
         //TODO: use something else, keeping this index feels lame
-        this.currentPhase = 2;
+        //this.currentPhase = 0;
 
         //schedule timeout for this phase.
         //the server has to check what to do for each phase in case people haven't voted yet or something.
         //important: if all people have voted before the timeout ends, we *need* to clear it
         //using clearTimeout(...)
-        this.setTimersForCurrentPhase();
-        console.log("Starting Game: Phase " + this.phases[this.currentPhase]);
+
+        //Do necessary starting stuff, set gamePhase for display in client, broadcast all an enable timer.
+        this.startPhase(this.currentPhaseString())
+
+
+        //NOTE: these things are at the end of "startPhase" now.
+        //this.setDataKeyForeachRole("gamePhase", this.currentPhaseString(), "ALL_ROLES");
+
+        //Send player Data which might have been updated (death flags, canVote...)
+        //this.broadcastPlayerData();
+
+        //run timeout for this phase again. 
+        //this.setTimersForCurrentPhase();
     }
 
 
@@ -203,40 +332,52 @@ class GamePhaseHandler {
     }
 
     handleDayVote(UUID, msg) {
-        console.log("UUID " + UUID + " voted during day! " + msg.UUID);
+        console.log("UUID " + UUID + " voted during Day! " + msg.voteUUID);
+        //console.log("BEFORE CHANGE IN HANDLEDAY");
+        //this.printAllUUIDS();
+        
+        this.changePlayerDataKeyValue(UUID, "currentVote", msg.voteUUID);
+        //console.log("AFTER CHANGE IN HANDLEDAY");
+        //this.printAllUUIDS();
+        
     }
 
     handleWerewolvesVote(UUID, msg) {
-        console.log("UUID " + UUID + " voted during werewolves! " + msg.UUID);
+        console.log("UUID " + UUID + " voted during Werewolves! " + msg.voteUUID);
+        //console.log("BEFORE CHANGE IN HANDLEWERE");
+        //this.printAllUUIDS();
+        this.changePlayerDataKeyValue(UUID, "currentVote", msg.voteUUID);
+        //console.log("AFTER CHANGE IN HANDLEWERE");
+        //this.printAllUUIDS();
     }
 
     handleUnknownVote(phase, UUID, msg) {
-        console.log("Voting during phase " + phase + " not implemented! " + UUID + " " + msg.UUID);
+        console.log("Voting during phase " + phase + " not implemented! " + UUID + " " + msg.voteUUID);
     }
 
     handleVote(UUID, msg) {
-        //handleVote should be for user votes, e.g. picking a target during werewolf phase, killing townspeople at the end of the day...
+        //handleVote should be for user votes, e.g. picking a target during werewolf phase, killing townspeople at the end of the Day...
         //witch choosing a target...
-        //for now, I'll implement just werewolves vs. townspeople, so only day/werewolves alternating for now.
+        //for now, I'll implement just Werewolves vs. townspeople, so only Day/Werewolves alternating for now.
 
         //check if the client is even allowed to vote
-        checkAndCreateUUID();
+        this.checkAndCreateUUID(UUID);
 
         if (this.playerData[UUID].canVote == 0) {
             console.log("Player " + UUID + " is not allowed to vote!");
             return;
         }
 
-        switch (currentPhaseString()) {
-            case "day":
+        switch (this.currentPhaseString()) {
+            case "Day":
                 this.handleDayVote(UUID, msg);
                 break;
-            case "werewolves":
+            case "Werewolves":
                 this.handleWerewolvesVote(UUID, msg);
                 break;
 
             default:
-                this.handleUnknownVote(currentPhaseString(), UUID, msg);
+                this.handleUnknownVote(this.currentPhaseString(), UUID, msg);
                 break;
         }
     }
@@ -245,27 +386,37 @@ class GamePhaseHandler {
         //TODO: do stuff at the start of a given phase. (whatever that might be)
         console.log("Handling startPhase: " + phase);
         switch (phase) {
-            case "day":
-                console.log("day starting, enabling votes for all");
+            case "Day":
+                console.log("Day starting, enabling votes for all");
                 this.setDataKeyForeachRole('canVote', 0, 'ALL_ROLES');
                 this.setDataKeyForeachRole('canVote', 1, 'ALL_ROLES');
                 break;
-            case "werewolves":
+            case "Werewolves":
                 console.log("Werewolves starting, enabling votes for them, disabling all others");
                 this.setDataKeyForeachRole('canVote', 0, 'ALL_ROLES');
-                this.setDataKeyForeachRole('canVote', 1, 'werewolf');
+                this.setDataKeyForeachRole('canVote', 1, 'Werewolf');
                 break;
 
             default:
                 break;
         }
+
+
+        this.setDataKeyForeachRole("gamePhase", this.currentPhaseString(), "ALL_ROLES");
+        this.setDataKeyForeachRole("currentVote", "", "ALL_ROLES");
+
+        //Send player Data which might have been updated (death flags, canVote...)
+        this.broadcastPlayerData();
+
+        //run timeout for this phase again. 
+        this.setTimersForCurrentPhase();
     }
 
     endPhase(phase) {
         //TODO: do stuff at the end of a given phase. (whatever that might be)
         console.log("Handling endPhase: " + phase);
         switch (phase) {
-            case "day":
+            case "Day":
 
                 break;
 
@@ -279,12 +430,13 @@ class GamePhaseHandler {
     nextPhase() {
 
         //resetTimers: we need this if we call nextPhase normally without timeout (e.g. if all people have voted already)
-        resetTimers();
+        //this.printAllUUIDS();
+        this.resetTimers();
         //TODO: here we could probably do transition logic for each phase, and send text-to-speech commands to the clients, as well as updated client info (current phase...)
-        console.log("Next Phase: Phase " + currentPhaseString() + " -> " + this.phases[(this.currentPhase + 1) % this.phases.length]);
+        console.log("Next Phase: Phase " + this.currentPhaseString() + " -> " + this.phases[(this.currentPhase + 1) % this.phases.length]);
 
-        this.endPhase(currentPhaseString())
-
+        this.endPhase(this.currentPhaseString())
+        //this.printAllUUIDS();
 
         //Switch to next phase
         this.currentPhase++;
@@ -293,10 +445,9 @@ class GamePhaseHandler {
         }
 
 
-        this.startPhase(currentPhaseString())
+        this.startPhase(this.currentPhaseString())
+        //this.printAllUUIDS();
 
-        //run timeout for this phase again. 
-        this.setTimersForCurrentPhase();
     }
 
 }

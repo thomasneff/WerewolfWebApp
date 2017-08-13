@@ -42,11 +42,14 @@ function updatePlayerData(playerData) {
     if (playerData.hasOwnProperty(key)) {
       var obj = playerData[key];
 
+      console.log("Creating card for key " + key);
+
       if (key == clientUUID) {
         changeOwnPlayerInfo(obj);
       }
       else {
         createCard(obj);
+        console.log("Created card with UUID " + obj.UUID);
       }
     }
   }
@@ -57,17 +60,21 @@ function changeOwnPlayerInfo(playerInfo) {
   $("#PLAYER_NAME").text(playerInfo.name);
   $('#PLAYER_NAME_INPUT').val(playerInfo.name);
   canVote = playerInfo.canVote;
+  $("#PHASE_NAME").text("Phase: " + playerInfo.gamePhase);
 }
 
 function createCard(playerInfo) {
   //{type:"Fiat", model:"500", color:"white"};
   var template = $('#CARD_TEMPLATE');
   var templateCopy = template.clone();
-  templateCopy.attr("id", "UUID_FROM_SERVER_TODO");
+  //templateCopy.attr("id",  playerInfo.UUID);
 
   templateCopy.find('.player-name').text(playerInfo.name);
   templateCopy.find('.player-img').attr("src", playerInfo.img);
-
+  console.log("PLAYERINFO UUID: " + playerInfo.UUID);
+  console.log("CARD ATTR ID before: " + templateCopy.find('.card').attr("id"));
+  templateCopy.find('.card').attr("id",  playerInfo.UUID);
+  console.log("CARD ATTR ID after: " + templateCopy.find('.card').attr("id"));
   //TODO: image data, just base64 encode the image and send it via the socket
 
   templateCopy.appendTo($('#GENERATED_CARDS'));
@@ -84,6 +91,7 @@ function cardClick(object) {
   //console.log($(this));
 
 
+  //Server also checks this.
   if (canVote == 0) {
     return;
   }
@@ -96,7 +104,9 @@ function cardClick(object) {
 
   if (activatedCard != object) {
     activatedCard = object;
-    //TODO: send to server if card changed
+    //TODO/DONE: send to server if card changed
+    //we always have to send our own UUID, that's why we also send a voteUUID as well
+    socket.emit("player_vote", {UUID: clientUUID, voteUUID: object.attr('id')});
   }
 
 
