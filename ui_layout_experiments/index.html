@@ -21,19 +21,144 @@
 
 <body>
 
+  <section id="StartScreen">
+      <div class="card-header text-center">
+          <h1>Werewolf-Online Game</h1>
+          Please Select a running game or create one!
+        </div>
+    <!-- Use this as a template for all running Server...-->
+      <div class="card">
+          <div class="container text-center">
+            <h4 class="card-title" id ="GameName">GameName</h4>
+            <button type="button" class="btn btn-primary" id='JOIN_BUTTON'>Join</button>
+          </div>
+      </div>
+    <!-- Template END -->
+        <div class="card-header text-center">
+            <button type="button" class="btn btn-primary" id='CREATE_BUTTON'>Create Server</button>
+        </div>
+  </section>
+
+  <section id="CreateServerScreen">
+      <div class="card">
+          <div class="card-header text-center">
+            <h1>Create-Server</h1>
+          </div>
+          <div class="container text-center">      
+            <p></p>       
+            <h4 class="card-title" id ="GameName">ServerName:</h4>
+            <input id="SERVER_NAME_INPUT" autocomplete="off" />
+            <p></p>   
+            <h4 class="card-title" id ="GameName">ServerPassword:</h4>
+            <input id="SERVER_PWD_INPUT" autocomplete="off" type="password"/>
+            <p></p>   
+            <h4 class="card-title" id ="PlayerName">PlayerName:</h4>
+            <input id="PLAYER_NAME_INPUT" autocomplete="off" />
+            <p></p>   
+            <h4 class="card-title" id ="PlayerPicture">PlayerPicture:</h4>
+            <input id="file" type="file" accept="image/*">
+            <p></p>   
+          </div>
+      </div>
+        <div class="card-header text-center">
+            <button type="button" class="btn btn-primary" id='CREATE_BUTTON'>Create Server (NOT WORKING)</button>
+        </div>
+  </section>
+
+  
+  <section id="JoinServerScreen">
+      <div class="card">
+          <div class="card-header text-center">
+            <h1>Join-Server</h1>
+          </div>
+          <div class="container text-center">      
+            <p></p>         
+            <h4 class="card-title" id ="GameName">ServerPassword:</h4>
+            <input id="SERVER_PWD_INPUT" autocomplete="off" type="password"/>
+            <p></p>   
+            <h4 class="card-title" id ="PlayerName">PlayerName:</h4>
+            <input id="PLAYER_NAME_INPUT" autocomplete="off" />
+            <p></p>   
+            <h4 class="card-title" id ="PlayerPicture">PlayerPicture:</h4>
+            <input id="file" type="file" accept="image/*">
+            <p></p>   
+          </div>
+      </div>
+        <div class="card-header text-center">
+            <button type="button" class="btn btn-primary" id='JOIN_BUTTON'>Join Server (NOT WORKING)</button>
+        </div>
+  </section>
+
+  <section id="PairingScreen">
+      <div class="card-header text-center">
+          <h1>Werewolf-Game</h1> <!-- SERVERNAME HERE ?!?-->
+        </div>
+  <!-- Use this as a template for all running Server...-->     
+      <div class="card">
+          <div class="container text-center">
+            <h4 class="card-title" id ="GameName">PlayerName</h4>
+            <button type="button" class="btn btn-primary" id='READY_BUTTON'>Ready</button>
+          </div>
+          <p></p> 
+       
+      </div>
+  <!-- END TEMPLATE -->
+  <div class="card-header text-center">
+      <button type="button" class="btn btn-primary" id='SETTINGS_BUTTON'>Settings</button>
+  </div>  
+  </section>
+
+  <section id="SettingsScreen">
+      <div class="card">
+          <div class="card-header text-center">
+            <h1>Game-Settings</h1>
+          </div>
+          <div class="container text-center">
+              <p></p>
+            <h4 class="card-title" id ="GameName">Werewolf Time-Limit:</h4>
+            <input id="TIMELIMIT_WEREWOLF_INPUT" autocomplete="off" />
+            <p></p>
+            <h4 class="card-title" id ="GameName">Townsperson Time-Limit:</h4>
+            <input id="TIMELIMIT_TOWNSPERSON_INPUT" autocomplete="off" />
+            <p></p>
+            <div class="checkbox">
+                <label><input type="checkbox" value="" disabled>   Captain</label>
+            </div>
+            <div class="checkbox">
+                <label><input type="checkbox" value="" disabled>   Witch</label>
+            </div>
+            <div class="checkbox">
+                <label><input type="checkbox" value="" disabled>   Seer</label>
+            </div>
+            <div class="checkbox">
+                <label><input type="checkbox" value="" disabled>   Girl</label>
+            </div>
+            <div class="checkbox">
+                <label><input type="checkbox" value="" disabled>   Hunter</label>
+            </div>
+            <div class="checkbox">
+                <label><input type="checkbox" value="" disabled>   Amor</label>
+            </div>
+          </div>
+          <p></p> 
+          <div class="card-header text-center">
+              <button type="button" class="btn btn-primary" id='BACK_BUTTON'>Back</button>
+          </div>         
+      </div>
+  </section>
 
 
-  <section>
+  <section id="GameScreen">
     <div class="container text-center">
 
-      <input id="file" type="file" accept="image/*">
+     <!-- <input id="file" type="file" accept="image/*">-->
 
-      <input id="PLAYER_NAME_INPUT" autocomplete="off" />
+      <!--<input id="PLAYER_NAME_INPUT" autocomplete="off" />-->
 
 
-      <button type="button" class="btn btn-primary" id='READY_BUTTON'>Ready</button>
-      <button type="button" class="btn btn-primary" id='JOIN_BUTTON'>Join</button>
-      <button type="button" class="btn btn-primary" id='CREATE_BUTTON'>Create</button>
+      <!--<button type="button" class="btn btn-primary" id='READY_BUTTON'>Ready</button>-->
+      <!--<button type="button" class="btn btn-primary" id='JOIN_BUTTON'>Join</button>-->
+      <!--<button type="button" class="btn btn-primary" id='CREATE_BUTTON'>Create</button>-->
 
       <table id="total votes" class="table">
         <thead>
@@ -60,11 +185,22 @@
             <img class="rounded" width="100%" src="http://i.imgur.com/QHxnyes.jpg?1" id="HIDDEN_PIC">
           </div>
           <div class="back text-center">
-            <h2 id="CHARACTER_NAME"></h2>
+              <div class="container">
+                  <div class="row">
+                      <div class="col-md-6">
+                          <img class="rounded" width="10%" src="http://i.imgur.com/QHxnyes.jpg?1" id="CAPTAIN_PIC">
+                      </div>
+                      <div class="col-md-6">
+                          <img class="rounded" width="10%" src="http://i.imgur.com/QHxnyes.jpg?1" id="LOVERS_PIC">
+                      </div>
+                  </div>
+              </div>
+            <h2 id="CHARACTER_NAME">NAME</h2>
             <img class="rounded" width="50%" src="http://i.imgur.com/QHxnyes.jpg?1" id="CHARACTER_PIC">
-            <p id="CHARACTER_DESC"></p>
+            <p id="CHARACTER_DESC">TEXT123</p>
           </div>
-        </div>
+        </di
+        v>
       </div>
     </div>
   </section>
