@@ -1,0 +1,34 @@
+
+When Game is already started, block room joining on server side. (Just out of safety, UI should never allow that.)
+
+Finish Voting implementation with results.
+  - Maybe just aggregate the votes and store the result, the 'effect' happens in a different phase
+    - For e.g. the Witch, all "Deaths" are announced at the beginning of the "Day" phase. So the Beginning of the phase "Day" looks at a list of all "Deaths" 
+      (each death also has a cause for e.g. the village elder role, which survives the first werewolf/special role kill)
+  - Clients should somehow receive an overview of the voting, at least on the "Day" voting/lynching. 
+    - Just make a "Day Vote Result" phase with timeout of e.g. 10 seconds, where number of votes are shown for each person
+
+Own Player Details have to be displayed somewhere, e.g. image, dead/alive, mayor status
+
+Dead Players should be displayed differently
+  - Show "Dead" in own player details
+  - In other player cards, dead players are displayed at the end of the list, grayed out, without click events.
+
+Win-Condition on Server-Side
+  - Keep track of dead people
+  - At the beginning of the "Day" and the end of the "Day", win conditions are checked / votes and special abilities regarding death of players are resolved.
+
+
+Room selection:
+  - Rooms use the same "Card-Template" as players
+    - Just display the image of the host, name of the room and number of players
+  - Has a "Create" Button, which hides the room selection UI, shows config UI for host.
+  - Config screen allows change of rules, number of special roles, etc.
+    - Query config options from the server? (e.g. by supplying the "input" type in the config params, as well as valid ranges, etc...)
+    - Upon finishing room config, host is entered into the game (hides config UI, shows game UI), flagged as "Host" by the server and receives special control elements (e.g. delete room)
+  - All clients need a "leave room" button, which just marks them as dead for all other players/GamePhaseHandler, it is removed from the room socket server-side
+  - Server needs to send "ingame" if people are already in a room, so the client UI can be built accordingly. Config page should just kick out the host if he refreshes, is not worth to implement caching here.
+
+
+
+Implement special roles
