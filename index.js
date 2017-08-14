@@ -6,8 +6,10 @@ var path = require('path');
 var express = require('express');
 app.use(express.static(path.join(__dirname, 'public')));
 var GamePhaseHandler = require('./GamePhaseHandler');
-
 var GamePhaseHandlers = {};
+
+var ConfigPhaseHandler = require('./ConfigPhaseHandler');
+var ConfigPhaseHandlers = {};
 
 //TODO: map from UUID -> roomID (for reconnecting users)
 //TODO: map from roomID -> GamePhaseHandler (for managing different games)

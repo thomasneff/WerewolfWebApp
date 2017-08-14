@@ -75,6 +75,11 @@ function highlightCard(object) {
   object.addClass("voted_for_this_card");
 }
 
+function UserReady(object) {  
+  console.log("UserReady");
+  object.parent("div").parent("div").addClass("Ready");
+  object.prop( "disabled", true );
+  }
 
 function changeOwnPlayerInfo(playerInfo) {
   $("#PLAYER_NAME").text(playerInfo.name);
@@ -115,8 +120,6 @@ function cardClick(object) {
   console.log("Called with " + object);
 
   //console.log($(this));
-
-
   //Server also checks this.
   if (canVote == 0) {
     return;
@@ -137,7 +140,7 @@ function cardClick(object) {
 //Ready Button
 $('#READY_BUTTON').click(function () {
   console.log("READY PRESSED");
-
+  UserReady($(this));
   socket.emit('ready', { UUID: clientUUID, ready: 1 });
   socket.emit('start', { UUID: clientUUID });
 
