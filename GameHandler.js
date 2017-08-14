@@ -124,7 +124,7 @@ class GamePhaseHandler {
             return;
         }
         console.log("Sent message of type " + msgType + " with content " + msg + " to user " + UUID);
-        this.UUIDSocketMap[UUID].emit(msgType, msg);
+        this.UUIDSocketMap[UUID].to(this.room).emit(msgType, msg);
     }
 
     broadcastPlayerData() {
@@ -243,9 +243,11 @@ class GamePhaseHandler {
             return;
         }
         this.gameStarted = 1;
+
         //TODO/DONE: assign roles using some configurable settings object in class (using sensible default values)
         this.initSpecialRoles();
         this.setDataKeyForeachRole('canVote', 0, 'ALL_ROLES');
+        this.setDataKeyForeachRole('gameStarted', 1, 'ALL_ROLES');
         //night start
         //TODO: use something else, keeping this index feels lame
         //this.currentPhase = 0;

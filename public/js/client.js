@@ -22,6 +22,7 @@ $(function () {
 
   //Server Receive Callbacks:
   socket.on('player_data_update', function (msg) {
+    console.log("received player data");
     updatePlayerData(msg);
   });
   socket.on('player_speak', function (msg) {
@@ -33,6 +34,21 @@ $(function () {
     date = date.toISOString().substr(14, 5);
     $('#TIME_VALUE').text(date);
   });
+
+  socket.on('already_ingame', function (msg) {
+    //we were already in a game, simply show that again.
+    hideShowSection($("#StartScreen"), $("#GameScreen"));
+    
+    console.log("received already-ingame");
+  });
+
+  //We have this extra event so the view doesn't flicker through showing/hiding of sections.
+  socket.on('start_screen', function () {
+    console.log("Start screen will be shown.")
+
+    $('#StartScreen').show();
+  });
+
 
   //FUTURE USE:
   socket.on('clear_screen', function () {
@@ -49,6 +65,12 @@ function changeOwnPlayerInfo(playerInfo) {
   $("#PLAYER_NAME").text(playerInfo.name);
   $('#PLAYER_NAME_INPUT').val(playerInfo.name);
   canVote = playerInfo.canVote;
+  if(playerInfo.gameStarted == 1)
+    {
+      $('#READY_BUTTON').hide();
+      $('#READY_BUTTON').prop("disabled", true);
+    }
+  
   $("#PHASE_NAME").text("Phase: " + playerInfo.gamePhase);
 }
 
@@ -141,6 +163,8 @@ function guidGenerator() {
 function hideShowSection(sectionHide, sectionShow) {
   sectionHide.hide();
   sectionShow.show();
+  //scroll to top as we might have been at the bottom
+  $('html,body').scrollTop(0);
 }
 
 //Buttons and Callbacks:

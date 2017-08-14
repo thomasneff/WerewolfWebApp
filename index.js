@@ -76,7 +76,14 @@ console.log("Button pressed: "+msg.toString());
       if (handler != null) {
         //handler.printAllUUIDS();
         //TODO: resending everything might be a waste, maybe just send specific things which are then updated client-side?
+
+        //we need to make sure the socket joins the room again to receive messages.
+        socket.leaveAll();
+        socket.join(UUIDRoomMap[msg.UUID]);
+        UUIDSocketMap[msg.UUID] = socket;
+        
         handler.broadcastPlayerData();
+        handler.sendToPlayer(msg.UUID, "already_ingame", 1);
       }
       return;
     }
@@ -85,8 +92,15 @@ console.log("Button pressed: "+msg.toString());
     UUIDSocketMap[msg.UUID] = socket;
     //UUIDRoomMap[msg.UUID] = msg.room;
     //Make them join a room which is reserved for the room list
+
+    //emit a flag that just says that we are on the start screen.
+
+    socket.emit("start_screen", 1);
+
     socket.join("ROOM_LIST_ROOM_WHICH_CAN_NOT_BE_SELECTED_AS_A_NAME_BY_ANY_HOST");
     console.log("Socket with UUID " + msg.UUID + " joined room list!");
+
+    
 
     //Set Screen:
     //var text = fs.readFileSync("./Resources/Pages/StartScreen.html");
