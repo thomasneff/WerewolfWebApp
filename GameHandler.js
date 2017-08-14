@@ -272,7 +272,6 @@ class GamePhaseHandler {
         console.log("Timer Update: " + this.secondCount);
         if(this.secondCount<=10)
         {
-            console.log(this.secondCount);
             this.io.to(this.room).emit('player_speak', {"Language":this.GameLanguage.toString(),"Text":this.secondCount.toString()});
         }
         this.io.to(this.room).emit('time_update', this.secondCount--);
