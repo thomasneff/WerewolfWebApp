@@ -150,16 +150,20 @@ $('#READY_BUTTON').click(function () {
 $('#JOIN_BUTTON').click(function () {
   console.log("JOIN PRESSED");
 
-  socket.emit('join_room', { UUID: clientUUID, room: 'test_room' });
+  socket.emit('join_room', { UUID: clientUUID, room: $('#SERVER_NAME_INPUT').val() });
 });
 
 //Create Button
 $('#CREATE_BUTTON').click(function () {
   console.log("CREATE PRESSED");
 
+  console.log("Roomname: "+$('#SERVER_NAME_INPUT').val());
+  console.log("RoomPwd: "+$('#SERVER_PWD_INPUT').val());
+
   socket.emit('create_room', {
     UUID: clientUUID,
-    room: 'test_room',
+    room: $('#SERVER_NAME_INPUT').val() ,
+    roomPWD: $('#SERVER_PWD_INPUT').val() ,
     phaseTimeouts: {
       "Day": 30,
       "Werewolves": 10
