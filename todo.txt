@@ -1,5 +1,29 @@
+On the config/create page, client needs to store all config data and pass it to the GamePhaseHandler constructor when create game is clicked.
+(Example: 
+
+socket.emit('create_room', {
+    UUID: clientUUID,
+    room: $('#SERVER_NAME_INPUT').val() ,
+    roomPWD: $('#SERVER_PWD_INPUT').val() ,
+    config = {
+      //TODO: make config object
+    }
+
+    img: hostImageBase64, //image of host, is simply stored in playerData.img by initializing it in the constructor
+    name: NAME_OF_PLAYER_TEXTBOX_FROM_JQUERY_VAL //same as image
+  });
+  
+)
+Server-side then stores the UUID from the creator as hostUUID in the GamePhaseHandler, to allow special priviledges and looking up the data for the room list. (GamePhaseHandler.GetHostData...)
+
+Join/Create needs a back button.
+
+
+
+
 Replace ugly image file upload button with player-data clickable image, maybe at the side of the player name 
 (see https://stackoverflow.com/a/18803568 )
+
 
 Maybe refactor playerData in GamePhaseHandler into playerData and playerDataSecret?
   - For roles, currentVote
