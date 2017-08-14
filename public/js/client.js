@@ -21,18 +21,18 @@ $(function () {
   socket.emit('client_connect', { UUID: clientUUID });
 
   //Server Receive Callbacks:
-  socket.on('join_ack', function (msg) {
+  //Old stuff should not be used! Server has to decide based on the Phase if vote is accepted or not
+ /* socket.on('join_ack', function (msg) {
     console.log("JOIN ACKED: " + msg);
   });
   socket.on('ready_ack', function (msg) {
     console.log("READY ACKED: " + msg);
     canVote = msg.canVote;
-  });
+  });*/
   socket.on('player_data_update', function (msg) {
     updatePlayerData(msg);
   });
   socket.on('player_speak', function (msg) {
-    console.log("SPEAK");
     Speak(msg);
   });
   socket.on('time_update', function (msg) {
@@ -48,9 +48,8 @@ $(function () {
     $('#ScreenBody').empty();
   });
   socket.on('draw_screen', function (msg) {
-    $('#ScreenBody').append(msg);
+    $('#ScreenBody').prepend(msg);
   });
-  
 });
 
 //Player related stuff:
@@ -121,8 +120,6 @@ function createCard(playerInfo) {
 }
 
 function Speak(SpeakInfo) {
-console.log("Speak with language:"+SpeakInfo.Language);
-console.log("\r\n And Text:"+SpeakInfo.Text);
 responsiveVoice.speak(SpeakInfo.Text, SpeakInfo.Language);
 }
 
@@ -151,6 +148,7 @@ function guidGenerator() {
 //Buttons and Callbacks:
 $('#JOIN_SCREEN_BUTTON').click(function () {
   console.log("JOIN Screen");
+  socket.emit('buttonPressed',"JoinScreen");
 //Unhide next element hide myself
 $(this).parent().parent().parent().hide();
 $(this).parent().parent().parent().next('section').next('section').show();
@@ -158,6 +156,7 @@ $(this).parent().parent().parent().next('section').next('section').show();
 
 $('#CREATE_SCREEN_BUTTON').click(function () {
   console.log("CREATE Screen");
+  socket.emit('buttonPressed',"CreateScreen");
 //Unhide next element hide myself
 $(this).parent().parent().hide();
 $(this).parent().parent().next('section').show();
@@ -206,7 +205,6 @@ $('#PLAYER_NAME_INPUT').bind('input', function () {
 });
 
 $('.info-card').click(function () {
-  console.log("PENI addwaS");
   responsiveVoice.speak("");
   ttsEnabled = 1;
   console.log("TTS ENABLED")
