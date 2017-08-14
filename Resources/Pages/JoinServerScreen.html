@@ -20,3 +20,11 @@
           <button type="button" class="btn btn-primary" id='JOIN_BUTTON'>Join Server</button>
       </div>
 </section>
+<script>
+    $('#JOIN_BUTTON').click(function () {
+    console.log("JOIN PRESSED");
+    socket.emit('join_room', { UUID: clientUUID, room: $('#SERVER_NAME_INPUT').val() });
+  //$(this).parent().parent().hide();
+  //$(this).parent().parent().next('section').show();
+  });
+</script>
