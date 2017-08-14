@@ -1,3 +1,14 @@
+Room selection:
+  - Rooms use the same "Card-Template" as players
+    - Just display the image of the host, name of the room and number of players
+  - Has a "Create" Button, which hides the room selection UI, shows config UI for host.
+  - Config screen allows change of rules, number of special roles, etc.
+    - Query config options from the server? (e.g. by supplying the "input" type in the config params, as well as valid ranges, etc...)
+    - Upon finishing room config, host is entered into the game (hides config UI, shows game UI), flagged as "Host" by the server and receives special control elements (e.g. delete room)
+  - All clients need a "leave room" button, which just marks them as dead for all other players/GamePhaseHandler, it is removed from the room socket server-side
+  - Server needs to send "ingame" if people are already in a room, so the client UI can be built accordingly. Config page should just kick out the host if he refreshes, is not worth to implement caching here.
+
+
 On the config/create page, client needs to store all config data and pass it to the GamePhaseHandler constructor when create game is clicked.
 (Example: 
 
@@ -50,15 +61,6 @@ Win-Condition on Server-Side
   - At the beginning of the "Day" and the end of the "Day", win conditions are checked / votes and special abilities regarding death of players are resolved.
 
 
-Room selection:
-  - Rooms use the same "Card-Template" as players
-    - Just display the image of the host, name of the room and number of players
-  - Has a "Create" Button, which hides the room selection UI, shows config UI for host.
-  - Config screen allows change of rules, number of special roles, etc.
-    - Query config options from the server? (e.g. by supplying the "input" type in the config params, as well as valid ranges, etc...)
-    - Upon finishing room config, host is entered into the game (hides config UI, shows game UI), flagged as "Host" by the server and receives special control elements (e.g. delete room)
-  - All clients need a "leave room" button, which just marks them as dead for all other players/GamePhaseHandler, it is removed from the room socket server-side
-  - Server needs to send "ingame" if people are already in a room, so the client UI can be built accordingly. Config page should just kick out the host if he refreshes, is not worth to implement caching here.
 
 
 
