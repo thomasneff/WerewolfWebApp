@@ -74,4 +74,7 @@ height: 100%;
 
   background-color: #F0F;
 }
-
+.card.Ready{
+  
+    background-color: #04FF00;
+  }

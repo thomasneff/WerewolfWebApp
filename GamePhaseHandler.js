@@ -165,6 +165,8 @@ class GamePhaseHandler {
     broadcastPlayerData() {
         //on client, we just need to iterate over all UUID objects inside to get the names and stuff
         this.io.to(this.room).emit('player_data_update', this.playerData);
+
+        this.io.to(this.room).emit('player_speak', {"Language":"Deutsch Female","Text":"BroadcastPlayerData"});
     }
 
 
