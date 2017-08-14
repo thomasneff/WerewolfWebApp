@@ -137,7 +137,16 @@ function cardClick(object) {
 
 }
 
-//Ready Button
+
+//Create Serverscreen Button
+$('#JOIN_SCREEN_BUTTON').click(function () {
+  console.log("JOIN Screen");
+//Unhide next element hide myself
+$(this).parent().parent().parent().hide();
+$(this).parent().parent().parent().next('section').next('section').show();
+});
+
+//Create Serverscreen Button
 $('#CREATE_SCREEN_BUTTON').click(function () {
   console.log("CREATE Screen");
 //Unhide next element hide myself
