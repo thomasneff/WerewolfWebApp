@@ -1,7 +1,3 @@
-//to change background color
-/* $(function(){
-  $("body").css("background-color","black");
-}); */
 var activatedCard = null;
 var cardState = 0;
 var canVote = 0;
@@ -14,27 +10,23 @@ var socket = io();
 
 //General functions
 $(function () {
+//On startup check if UUID already exists, otherwise create one and send to server
   if (localStorage.hasOwnProperty("werewolfAppID")) {
     clientUUID = localStorage.getItem("werewolfAppID")
-    socket.emit('start_blabla', clientUUID);
-    console.log("TEST1 " + clientUUID);
   }
   else {
     clientUUID = guidGenerator()
-    localStorage.setItem("werewolfAppID", clientUUID) // here someid from your google analytics fetch
-    socket.emit('start_blabla', clientUUID);
-    console.log("TEST2 " + clientUUID);
+    localStorage.setItem("werewolfAppID", clientUUID)
   }
   socket.emit('client_connect', { UUID: clientUUID });
+
+  //Server Receive Callbacks:
   socket.on('join_ack', function (msg) {
     console.log("JOIN ACKED: " + msg);
   });
   socket.on('ready_ack', function (msg) {
     console.log("READY ACKED: " + msg);
     canVote = msg.canVote;
-  });
-  socket.on('chat message', function (msg) {
-    $('#messages').append($('<li>').text(msg));
   });
   socket.on('player_data_update', function (msg) {
     updatePlayerData(msg);
@@ -44,10 +36,6 @@ $(function () {
     Speak(msg);
   });
   socket.on('time_update', function (msg) {
-    //console.log("TIME UPDATE!!!! " + msg);
-    if (ttsEnabled) {
-      //responsiveVoice.speak("Welcome to anus werewolf " + $('#PLAYER_NAME').text(), "Deutsch Female");
-    }
     var date = new Date(null);
     date.setSeconds(msg); // specify value for SECONDS here
     date = date.toISOString().substr(14, 5);
