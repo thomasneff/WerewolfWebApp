@@ -4,9 +4,22 @@ class ConfigPhaseHandler {
         
         //This is the whole playerData (UUID -> {name, role(s), img, canVote, ...})
         this.ServerList = [];
+        this.UUIDList = [];
         this.PlayerList = [];
 
         this.ServerPlayerMap={};
+    }
+
+    addClient(UUID)
+    {
+        if(UUID in this.UUIDList)
+        {
+           return false;
+        }
+        else
+        {
+            this.UUIDList.push(UUID);
+        }
     }
 
     getServerList()
