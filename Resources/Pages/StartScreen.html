@@ -15,3 +15,21 @@
             <button type="button" class="btn btn-primary" id='CREATE_SCREEN_BUTTON'>Create Server PAGE</button>
         </div>
   </section>
+<script>
+    //Buttons and Callbacks:
+    $('#JOIN_SCREEN_BUTTON').click(function () {
+        console.log("JOIN Screen");
+        socket.emit('buttonPressed',"JoinScreen");
+    //Unhide next element hide myself
+    //$(this).parent().parent().parent().hide();
+    //$(this).parent().parent().parent().next('section').next('section').show();
+    });
+    
+    $('#CREATE_SCREEN_BUTTON').click(function () {
+        console.log("CREATE Screen");
+        socket.emit('buttonPressed',"CreateScreen");
+    //Unhide next element hide myself
+    //$(this).parent().parent().hide();
+    //$(this).parent().parent().next('section').show();
+    });
+  </script>

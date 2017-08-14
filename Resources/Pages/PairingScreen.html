@@ -13,3 +13,13 @@
     </div>
 <!-- END TEMPLATE -->
 </section>
+<script>
+        $('#READY_BUTTON').click(function () {
+    console.log("READY PRESSED");
+    UserReady($(this));
+    socket.emit('ready', { UUID: clientUUID, ready: 1 });
+    socket.emit('start', { UUID: clientUUID });
+    //$(this).parent().parent().parent().hide();
+    //$(this).parent().parent().parent().next('section').show();
+    });
+</script>

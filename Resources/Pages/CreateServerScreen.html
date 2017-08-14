@@ -58,3 +58,30 @@
           <button type="button" class="btn btn-primary" id='CREATE_BUTTON'>Create Server</button>
       </div>
 </section>
+
+<script>   
+    $('#CREATE_BUTTON').click(function () {
+    console.log("CREATE PRESSED");
+
+    console.log("Roomname: "+$('#SERVER_NAME_INPUT').val());
+    console.log("RoomPwd: "+$('#SERVER_PWD_INPUT').val());
+
+    socket.emit('create_room', {
+        UUID: clientUUID,
+        room: $('#SERVER_NAME_INPUT').val() ,
+        roomPWD: $('#SERVER_PWD_INPUT').val() ,
+        phaseTimeouts: {
+        "Day": 30,
+        "Werewolves": 10
+        }
+    });
+        //Unhide next element hide myself
+    //$(this).parent().parent().hide();
+    //$(this).parent().parent().next('section').show();
+    });
+
+    $('#PLAYER_NAME_INPUT').bind('input', function () {
+  console.log("INPUT CHANGED " + $(this).val());
+  socket.emit('name_change', { UUID: clientUUID, name: $(this).val() });
+});
+</script>
