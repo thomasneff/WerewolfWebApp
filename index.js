@@ -19,8 +19,7 @@ var UUIDRoomMap = {}
 var RoomGameStarted = {}
 
 app.get('/', function (req, res) {
-  //res.sendFile(__dirname + '/index.html');
-  res.sendFile(__dirname + '/ui_layout_experiments/index.html');
+  res.sendFile(__dirname + '/index.html');
 });
 
 http.listen(3000, function () {
