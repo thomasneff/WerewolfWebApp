@@ -40,7 +40,7 @@ class GamePhaseHandler {
         //This maps from UUID to UUID, storing votes for the current phase. Gets cleared after each phase.
         //TODO: this should/could contain an object for each UUID, to enable specifics e.g. witch save/heal, ...
         this.votes = {};
-        this.GameLanguage ="Deutsch Female";
+        this.GameLanguage ="Deutsch Female"; //"US English Female";
         //override all settings with option parameters
     }
 
