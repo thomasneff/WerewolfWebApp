@@ -41,6 +41,16 @@ $(function () {
     date = date.toISOString().substr(14, 5);
     $('#TIME_VALUE').text(date);
   });
+
+  //FUTURE USE:
+  socket.on('clear_screen', function () {
+    console.log("EMPTY");
+    $('#ScreenBody').empty();
+  });
+  socket.on('draw_screen', function (msg) {
+    $('#ScreenBody').append(msg);
+  });
+  
 });
 
 //Player related stuff:
