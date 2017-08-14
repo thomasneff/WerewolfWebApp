@@ -11,9 +11,6 @@ var GamePhaseHandlers = {};
 var ConfigPhaseHandler = require('./ConfigPhaseHandler');
 var ConfigPhaseHandlers = {};
 
-//TODO: map from UUID -> roomID (for reconnecting users)
-//TODO: map from roomID -> GamePhaseHandler (for managing different games)
-//TODO: maybe we need an array from UUID -> socket? at least the GamePhaseHandler should have this to send specific calls.
 
 //NOTE: we always send objects via socket.io, have to access the attributes in all respective calls.
 //NOTE: we always send the UUID.
