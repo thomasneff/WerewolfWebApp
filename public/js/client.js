@@ -138,19 +138,11 @@ function cardClick(object) {
 }
 
 //Ready Button
-$('#READY_BUTTON').click(function () {
-  console.log("READY PRESSED");
-  UserReady($(this));
-  socket.emit('ready', { UUID: clientUUID, ready: 1 });
-  socket.emit('start', { UUID: clientUUID });
-
-});
-
-//Join Button
-$('#JOIN_BUTTON').click(function () {
-  console.log("JOIN PRESSED");
-
-  socket.emit('join_room', { UUID: clientUUID, room: $('#SERVER_NAME_INPUT').val() });
+$('#CREATE_SCREEN_BUTTON').click(function () {
+  console.log("CREATE Screen");
+//Unhide next element hide myself
+$(this).parent().parent().hide();
+$(this).parent().parent().next('section').show();
 });
 
 //Create Button
@@ -169,6 +161,34 @@ $('#CREATE_BUTTON').click(function () {
       "Werewolves": 10
     }
   });
+
+//Join Button
+$('#JOIN_BUTTON').click(function () {
+  console.log("JOIN PRESSED");
+
+  socket.emit('join_room', { UUID: clientUUID, room: $('#SERVER_NAME_INPUT').val() });
+
+    //Unhide next element hide myself
+$(this).parent().parent().hide();
+$(this).parent().parent().next('section').show();
+});
+  
+//Ready Button
+$('#READY_BUTTON').click(function () {
+  console.log("READY PRESSED");
+  UserReady($(this));
+  socket.emit('ready', { UUID: clientUUID, ready: 1 });
+  socket.emit('start', { UUID: clientUUID });
+
+    //Unhide next element hide myself
+$(this).parent().parent().parent().hide();
+$(this).parent().parent().parent().next('section').show();
+
+});
+
+  //Unhide next element hide myself
+$(this).parent().parent().hide();
+$(this).parent().parent().next('section').show();
 });
 
 //Input Text Box
