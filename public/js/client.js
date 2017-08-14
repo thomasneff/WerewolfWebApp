@@ -10,7 +10,7 @@ var socket = io();
 
 //General functions
 $(function () {
-//On startup check if UUID already exists, otherwise create one and send to server
+  //On startup check if UUID already exists, otherwise create one and send to server
   if (localStorage.hasOwnProperty("werewolfAppID")) {
     clientUUID = localStorage.getItem("werewolfAppID")
   }
@@ -21,14 +21,6 @@ $(function () {
   socket.emit('client_connect', { UUID: clientUUID });
 
   //Server Receive Callbacks:
-  //Old stuff should not be used! Server has to decide based on the Phase if vote is accepted or not
- /* socket.on('join_ack', function (msg) {
-    console.log("JOIN ACKED: " + msg);
-  });
-  socket.on('ready_ack', function (msg) {
-    console.log("READY ACKED: " + msg);
-    canVote = msg.canVote;
-  });*/
   socket.on('player_data_update', function (msg) {
     updatePlayerData(msg);
   });
@@ -94,11 +86,12 @@ function highlightCard(object) {
   object.addClass("voted_for_this_card");
 }
 
-function UserReady(object) {  
+function UserReady(object) {
   console.log("UserReady");
+  object.hide();
   object.parent("div").parent("div").addClass("Ready");
-  object.prop( "disabled", true );
-  }
+  object.prop("disabled", true);
+}
 
 function createCard(playerInfo) {
   //{type:"Fiat", model:"500", color:"white"};
@@ -120,7 +113,7 @@ function createCard(playerInfo) {
 }
 
 function Speak(SpeakInfo) {
-responsiveVoice.speak(SpeakInfo.Text, SpeakInfo.Language);
+  responsiveVoice.speak(SpeakInfo.Text, SpeakInfo.Language);
 }
 
 function cardClick(object) {
@@ -145,58 +138,81 @@ function guidGenerator() {
   return (S4() + S4() + "-" + S4() + "-" + S4() + "-" + S4() + "-" + S4() + S4() + S4());
 }
 
+function hideShowSection(sectionHide, sectionShow) {
+  sectionHide.hide();
+  sectionShow.show();
+}
+
 //Buttons and Callbacks:
 $('#JOIN_SCREEN_BUTTON').click(function () {
   console.log("JOIN Screen");
-  socket.emit('buttonPressed',"JoinScreen");
-//Unhide next element hide myself
-$(this).parent().parent().parent().hide();
-$(this).parent().parent().parent().next('section').next('section').show();
+  socket.emit('buttonPressed', "JoinScreen");
+  //Unhide next element hide myself
+  //$(this).parent().parent().parent().hide();
+  //$(this).parent().parent().parent().next('section').next('section').show();
+
+  //Hide join section, show game section
+  hideShowSection($("#StartScreen"), $("#JoinServerScreen"));
+
 });
 
 $('#CREATE_SCREEN_BUTTON').click(function () {
   console.log("CREATE Screen");
-  socket.emit('buttonPressed',"CreateScreen");
-//Unhide next element hide myself
-$(this).parent().parent().hide();
-$(this).parent().parent().next('section').show();
+  socket.emit('buttonPressed', "CreateScreen");
+  //Unhide next element hide myself
+  //$(this).parent().parent().hide();
+  //$(this).parent().parent().next('section').show();
+
+  //Hide join section, show game section
+  hideShowSection($("#StartScreen"), $("#CreateServerScreen"));
 });
 
 $('#CREATE_BUTTON').click(function () {
   console.log("CREATE PRESSED");
 
-  console.log("Roomname: "+$('#SERVER_NAME_INPUT').val());
-  console.log("RoomPwd: "+$('#SERVER_PWD_INPUT').val());
+  console.log("Roomname: " + $('#SERVER_NAME_INPUT').val());
+  console.log("RoomPwd: " + $('#SERVER_PWD_INPUT').val());
 
   socket.emit('create_room', {
     UUID: clientUUID,
-    room: $('#SERVER_NAME_INPUT').val() ,
-    roomPWD: $('#SERVER_PWD_INPUT').val() ,
+    room: $('#SERVER_NAME_INPUT').val(),
+    roomPWD: $('#SERVER_PWD_INPUT').val(),
     phaseTimeouts: {
       "Day": 30,
       "Werewolves": 10
     }
   });
-    //Unhide next element hide myself
-$(this).parent().parent().hide();
-$(this).parent().parent().next('section').show();
+
+  //Create should also automatically join.
+  //TODO: maybe we should store all the input form val()'s in js variables / objects?
+  socket.emit('join_room', { UUID: clientUUID, room: $('#SERVER_NAME_INPUT').val() });
+
+  //Unhide next element hide myself
+  //$(this).parent().parent().hide();
+  //$(this).parent().parent().next('section').show();
+
+  //Hide join section, show game section
+  hideShowSection($("#CreateServerScreen"), $("#GameScreen"));
 });
 
 $('#JOIN_BUTTON').click(function () {
   console.log("JOIN PRESSED");
 
   socket.emit('join_room', { UUID: clientUUID, room: $('#SERVER_NAME_INPUT').val() });
-$(this).parent().parent().hide();
-$(this).parent().parent().next('section').show();
+  //$(this).parent().parent().hide();
+  //$(this).parent().parent().next('section').show();
+
+  //Hide join section, show game section
+  hideShowSection($("#JoinServerScreen"), $("#GameScreen"));
 });
-  
+
 $('#READY_BUTTON').click(function () {
   console.log("READY PRESSED");
   UserReady($(this));
   socket.emit('ready', { UUID: clientUUID, ready: 1 });
   socket.emit('start', { UUID: clientUUID });
-$(this).parent().parent().parent().hide();
-$(this).parent().parent().parent().next('section').show();
+  //$(this).parent().parent().parent().hide();
+  //$(this).parent().parent().parent().next('section').show();
 });
 
 $('#PLAYER_NAME_INPUT').bind('input', function () {
