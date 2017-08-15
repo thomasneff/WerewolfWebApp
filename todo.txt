@@ -21,18 +21,15 @@ Implement a generic server-config object (server-side), which gets sent to the c
       //...
     ]
 
-Join/Create needs a back button. (Which is just hide/show of the current view.)
-
-Force name to be entered (min 1 character) on client-side & server-side (server-side just reject similar to password fail, client-side could throw an alert or something?)
 
 Clear previous inputs if client gets rejected from joining (because of password)?
+
 
 Game needs a disconnect button (needs to remove client from GameHandler and show room list again.)
 
 Change Broadcast of playerData so it only gets sent to the specific player (e.g. Player1 refreshes, only he gets a message, not everyone.)
 
 
-      
     
 
 

@@ -171,6 +171,19 @@ io.on('connection', function (socket) {
       console.log("Cannot join room " + msg.room + " as it doesn't exist. By UUID " + msg.UUID);
       return;
     }
+
+//Check IF name is ok:
+if(msg.name.toString().length<1)
+  {
+    socket.emit("client_alert","Please insert a valid Player Name!")
+    return;
+  }
+  if(msg.name.toString().length<1)
+    {
+      socket.emit("client_alert","Please insert a valid Player Name!")
+      return;
+    }
+
     var handler = GameHandlers[msg.room];
     //TODO: check if necessary?
     /*if (msg.UUID in UUIDSocketMap && msg.UUID in UUIDRoomMap) {
@@ -250,6 +263,18 @@ io.on('connection', function (socket) {
       console.log("Tried to create reserved room: " + serverData.room + " by " + msg.UUID);
       return;
     }
+
+    if(serverData.room.toString().length<1)
+      {
+        socket.emit("client_alert","Please insert a valid Server Name!"+serverData.room.toString())
+        return;
+      }
+
+    if(msg.name.toString().length<1)
+      {
+        socket.emit("client_alert","Please insert a valid Player Name!"+msg.name.toString())
+        return;
+      }
     //TODO: this should be done when creating the room with all config options by the host, not when joining. (REFACTOR TO CREATE AND JOIN)
     //TODO: we also shouldn't be able to join a room which doesn't exist (REFACTOR TO CREATE AND JOIN)
     if (!(serverData.room in GameHandlers)) {

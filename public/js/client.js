@@ -221,12 +221,8 @@ function hideShowSection(sectionHide, sectionShow) {
 });*/
 
 $('#CREATE_SCREEN_BUTTON').click(function () {
-  console.log("CREATE Screen");
-
-  
+  console.log("CREATE Screen");socket.emit('require_room_config', 1);
   socket.emit('require_room_config', 1);
-
-
   //Hide join section, show game section
   hideShowSection($("#RoomList"), $("#CreateServerScreen"));
 });
@@ -257,12 +253,13 @@ $('#CREATE_BUTTON').click(function () {
       "Werewolves": 10
     }
   });
-
   //Create should also automatically join.
   //TODO: maybe we should store all the input form val()'s in js variables / objects?
   socket.emit('join_room', { UUID: clientUUID, pass: pass, room: room, name: playerName, img: playerImage });
+  
+    //DON'T DO THAT IF SERVER CREATION FAILS!!
   //Hide join section, show game section
-  hideShowSection($("#CreateServerScreen"), $("#GameScreen"));
+  //hideShowSection($("#CreateServerScreen"), $("#GameScreen"));
 });
 
 $('#JOIN_BUTTON').click(function () {
@@ -270,8 +267,18 @@ $('#JOIN_BUTTON').click(function () {
   var name = $('#CLIENT_PLAYER_NAME_INPUT').val()
   var pass = $("#CLIENT_PWD_INPUT").val()
   socket.emit('join_room', { UUID: clientUUID, name: name, img: playerImage, room: roomToJoin, pass: pass });
+});
 
-  //The hiding/showing of the screens/views is done in the "join_ack" event.
+$('#CREATE_BACK_BUTTON').click(function () {
+  console.log("BACK PRESSED");
+    //TODO: Refresh Serverlist ?!?
+  hideShowSection($("#CreateServerScreen"), $("#RoomList"));
+});
+
+$('#JOIN_BACK_BUTTON').click(function () {
+  console.log("BACK PRESSED");
+    //TODO: Refresh Serverlist ?!?
+  hideShowSection($("#JoinServerScreen"), $("#RoomList"));
 });
 
 $('#READY_BUTTON').click(function () {
