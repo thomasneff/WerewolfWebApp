@@ -38,6 +38,43 @@ function getGameHandlerFromUUID(UUID) {
   return GameHandlers[room_id];
 }
 
+function checkSocketAndGivenUUID(UUID, socket) {
+  //For every message, we need to check if the socket/UUID we have stored upon first connecting
+  //matches the socket/UUID of any given message.
+
+
+  if (!(UUID in UUIDSocketMap) || UUIDSocketMap[UUID] != socket) {
+    console.log("Error, given client UUID does not match stored socket, someone sent a wrong/fake UUID with its message!");
+    console.log("UUID given: " + UUID);
+    return false;
+  }
+
+  return true;
+}
+
+function buildRoomListObject() {
+  //Iterate over all GamePhaseHandlers (which are open games), check if they are running or not (we can only join if they are not running)
+  //And get RoomInfo from the GamePhaseHandler
+  roomList = [];
+
+  for (var UUID in GamePhaseHandlers) {
+
+    if (GamePhaseHandlers.hasOwnProperty(UUID)) {
+
+      var handler = GamePhaseHandlers[UUID];
+
+      //Skip over running games
+      if (handler.isGameStarted()) {
+        continue;
+      }
+
+      roomList.push(handler.getRoomInfo());
+
+    }
+
+  }
+}
+
 function guidGenerator() {
   var S4 = function () {
     return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
@@ -50,6 +87,12 @@ io.on('connection', function (socket) {
   //console.log("CONNECTION");
   //This event is received when a client selects another player (vote)
   socket.on('player_vote', function (msg) {
+
+    if (checkSocketAndGivenUUID(msg.UUID, socket) == false) {
+      //Someone sent a wrong UUID.
+      return;
+    }
+
     var handler = getGameHandlerFromUUID(msg.UUID);
     if (handler != null) {
       //handler.changePlayerDataKeyValue(msg.UUID, 'img', msg.img);
@@ -61,7 +104,7 @@ io.on('connection', function (socket) {
   });
   //Try to load pages based on their state...
   socket.on('buttonPressed', function (msg) {
-console.log("Button pressed: "+msg.toString());
+    console.log("Button pressed: " + msg.toString());
   });
 
   socket.on('client_connect', function (msg) {
@@ -81,7 +124,7 @@ console.log("Button pressed: "+msg.toString());
         socket.leaveAll();
         socket.join(UUIDRoomMap[msg.UUID]);
         UUIDSocketMap[msg.UUID] = socket;
-        
+
         handler.broadcastPlayerData();
         handler.sendToPlayer(msg.UUID, "already_ingame", 1);
       }
@@ -93,26 +136,32 @@ console.log("Button pressed: "+msg.toString());
     //UUIDRoomMap[msg.UUID] = msg.room;
     //Make them join a room which is reserved for the room list
 
-    //emit a flag that just says that we are on the start screen.
+    //emit a message saying that we are on the start screen, in addition to the "Room List"
 
     socket.emit("start_screen", 1);
 
     socket.join("ROOM_LIST_ROOM_WHICH_CAN_NOT_BE_SELECTED_AS_A_NAME_BY_ANY_HOST");
     console.log("Socket with UUID " + msg.UUID + " joined room list!");
 
-    
+
 
     //Set Screen:
     //var text = fs.readFileSync("./Resources/Pages/StartScreen.html");
     //io.emit("draw_screen", text.toString());
   });
   socket.on('join_room', function (msg) {
+
+    if (checkSocketAndGivenUUID(msg.UUID, socket) == false) {
+      //Someone sent a wrong UUID.
+      return;
+    }
+
     console.log("join_room: " + msg.room + " by " + msg.UUID);
     if (!(msg.room in GameHandlers)) {
       console.log("Cannot join room " + msg.room + " as it doesn't exist. By UUID " + msg.UUID);
       return;
     }
-    if (msg.UUID in UUIDSocketMap && msg.UUID in UUIDRoomMap) {
+    /*if (msg.UUID in UUIDSocketMap && msg.UUID in UUIDRoomMap) {
       //check if we were already connected.
       console.log("Was already connected, just resending data.");
       //TODO/HACK: remove this, just for now, I send them their playerdata back.
@@ -123,7 +172,7 @@ console.log("Button pressed: "+msg.toString());
         handler.broadcastPlayerData();
       }
       return;
-    }
+    }*/
     //If we were not in the room, but trying to join, we need to check if the game is already running.
     //This should probably never happen unless someone uses the browser console to send join events to specific games.
     if (msg.room in GameHandlers) {
@@ -152,23 +201,32 @@ console.log("Button pressed: "+msg.toString());
   socket.on('create_room', function (msg) {
     //msg has to contain the different options for the game
     //Check if room already exists or is reserved for room list
-    if (msg.room in GameHandlers) {
-      console.log("Tried to create room which already exists: " + msg.room + " by " + msg.UUID);
+
+    var serverData = msg.serverData
+
+    if (serverData.room in GameHandlers) {
+      console.log("Tried to create room which already exists: " + serverData.room + " by " + msg.UUID);
       return;
     }
-    if (msg.room == "ROOM_LIST_ROOM_WHICH_CAN_NOT_BE_SELECTED_AS_A_NAME_BY_ANY_HOST") {
-      console.log("Tried to create reserved room: " + msg.room + " by " + msg.UUID);
+    if (serverData.room == "ROOM_LIST_ROOM_WHICH_CAN_NOT_BE_SELECTED_AS_A_NAME_BY_ANY_HOST") {
+      console.log("Tried to create reserved room: " + serverData.room + " by " + msg.UUID);
       return;
     }
     //TODO: this should be done when creating the room with all config options by the host, not when joining. (REFACTOR TO CREATE AND JOIN)
     //TODO: we also shouldn't be able to join a room which doesn't exist (REFACTOR TO CREATE AND JOIN)
-    if (!(msg.room in GameHandlers)) {
-      console.log("Added new GameHandler for room " + msg.room)
-      GameHandlers[msg.room] = new GameHandler(io, msg);
+    if (!(serverData.room in GameHandlers)) {
+      console.log("Added new GameHandler for room " + serverData.room)
+      GameHandlers[serverData.room] = new GameHandler(io, msg);
     }
   });
 
   socket.on('name_change', function (msg) {
+
+    if (checkSocketAndGivenUUID(msg.UUID, socket) == false) {
+      //Someone sent a wrong UUID.
+      return;
+    }
+
     var handler = getGameHandlerFromUUID(msg.UUID);
     if (handler != null) {
       console.log("name_change: " + msg.name + " by " + msg.UUID);
@@ -177,13 +235,19 @@ console.log("Button pressed: "+msg.toString());
       //TODO: resending everything might be a waste, maybe just send specific things which are then updated client-side?
       handler.broadcastPlayerData();
     }
-    else
-      {
-        console.log("Game is not started yet, cannot change name by " + msg.UUID);
-      }
+    else {
+      console.log("Game is not started yet, cannot change name by " + msg.UUID);
+    }
   });
 
   socket.on('image_change', function (msg) {
+
+    if (checkSocketAndGivenUUID(msg.UUID, socket) == false) {
+      //Someone sent a wrong UUID.
+      return;
+    }
+
+
     var handler = getGameHandlerFromUUID(msg.UUID);
     if (handler != null) {
       handler.changePlayerDataKeyValue(msg.UUID, 'img', msg.img);
@@ -194,6 +258,12 @@ console.log("Button pressed: "+msg.toString());
   });
 
   socket.on('ready', function (msg) {
+
+    if (checkSocketAndGivenUUID(msg.UUID, socket) == false) {
+      //Someone sent a wrong UUID.
+      return;
+    }
+
     var handler = getGameHandlerFromUUID(msg.UUID);
     if (handler != null) {
       handler.changePlayerDataKeyValue(msg.UUID, 'ready', msg.ready);
@@ -207,6 +277,12 @@ console.log("Button pressed: "+msg.toString());
 
 
   socket.on('start', function (msg) {
+
+    if (checkSocketAndGivenUUID(msg.UUID, socket) == false) {
+      //Someone sent a wrong UUID.
+      return;
+    }
+
     var handler = getGameHandlerFromUUID(msg.UUID);
     if (handler != null) {
       if (handler.isGameStarted()) {

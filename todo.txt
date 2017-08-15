@@ -9,6 +9,7 @@ Room selection:
   - Server needs to send "ingame" if people are already in a room, so the client UI can be built accordingly. Config page should just kick out the host if he refreshes, is not worth to implement caching here.
 
 
+
 On the config/create page, client needs to store all config data and pass it to the GamePhaseHandler constructor when create game is clicked.
 (Example: 
 
