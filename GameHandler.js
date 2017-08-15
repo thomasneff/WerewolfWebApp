@@ -12,36 +12,53 @@ class GamePhaseHandler {
         //      but for narration events it might make sense. We can still add them later, however.
         this.phases = ["Day", "Werewolves"]
         this.currentPhase = 1;
-        //this.phaseTimeouts = 3; // for testing, 3 seconds. Should be configurable or 5 minutes or something (300 seconds)
-        this.phaseTimeouts = {
-            "Day": 300,
-            "Werewolves": 10
-        } || options.phaseTimeouts;
-        //This contains the number of each of the special roles. For convenience, the attributes are *exactly* the same as the internal role names
-        this.roleConfig = {
-            "Werewolf": 1,
-            "Witch": 0,
-            "Seer": 0, //etc... Townspeople are always all the remaining players
-        } || options.roleConfig;
+
+        //This is the whole playerData (UUID -> {name, role(s), img, canVote, ...})
+        //This gets initialized/filled dynamically upon player/client connect.
+        this.playerData = {};
+
+        this.serverData = {
+            "room" : options.serverData.room,
+            "pass" : "" || options.serverData.password,
+            "language" : "Deutsch Female" || options.serverData.language,
+            //This contains the number of each of the special roles. For convenience, the attributes are *exactly* the same as the internal role names
+            "roleConfig" : {
+                "Werewolf": 1,
+                "Witch": 0,
+                "Seer": 0, //etc... Townspeople are always all the remaining players
+            } || options.roleConfig,
+
+            //This contains the number of seconds for each phase until timeout.
+            "phaseTimeouts" : {
+                "Day": 300,
+                "Werewolves": 10
+            } || options.phaseTimeouts,  
+            
+        };
+
+        this.gameState = {
+            //This is just a flag which gets set when the game is started so no one can join.
+            "gameStarted": 0,
+            //This is just for displaying the time left of this phase for the clients.
+            "secondsLeftInPhase": 100,
+        }
+
 
         this.timeoutObject = null;
-        this.room = options.room;
+     
         //This is the socket for the whole room
         this.io = io;
-        //This is just a flag which gets set when the game is started so noone can join.
-        this.gameStarted = 0;
+       
         //This is just for displaying the current timer to the clients.
         this.intervalTimer = null;
-        this.secondCount = 100;
-        //This is the whole playerData (UUID -> {name, role(s), img, canVote, ...})
-        this.playerData = {};
+        
         //This maps from UUID to specific sockets so we can communicate with specific players (e.g. host, specific roles...)
         this.UUIDSocketMap = {};
+
         //This maps from UUID to UUID, storing votes for the current phase. Gets cleared after each phase.
         //TODO: this should/could contain an object for each UUID, to enable specifics e.g. witch save/heal, ...
+        //TODO: should we refactor this into serverData? Does that make sense?
         this.votes = {};
-        this.GameLanguage ="Deutsch Female"; //"US English Female";
-        //override all settings with option parameters
     }
 
     printAllUUIDS() {
@@ -56,7 +73,7 @@ class GamePhaseHandler {
         if (!(UUID in this.playerData)) {
             //make new object for UUID if it doesn't exist yet
             //NOTE: here we can also do initialization for new players for internal state variables
-            this.playerData[UUID] = { canVote: 0, role: 'Townsperson', UUID: UUID, roomName: this.room };
+            this.playerData[UUID] = { canVote: 0, role: 'Townsperson', UUID: UUID};
         }
     }
 
@@ -124,40 +141,40 @@ class GamePhaseHandler {
             return;
         }
         console.log("Sent message of type " + msgType + " with content " + msg + " to user " + UUID);
-        this.UUIDSocketMap[UUID].to(this.room).emit(msgType, msg);
+        this.UUIDSocketMap[UUID].to(this.serverData.room).emit(msgType, msg);
     }
 
     broadcastPlayerData() {
         //on client, we just need to iterate over all UUID objects inside to get the names and stuff
-        this.io.to(this.room).emit('player_data_update', this.playerData);
-        //this.io.to(this.room).emit('player_speak', {"Language":"Deutsch Female","Text":"BroadcastPlayerData"});
-        //this.io.to(this.room).emit('clear_screen', {"Language":"Deutsch Female","Text":"BroadcastPlayerData"});
-        //this.io.to(this.room).emit('draw_screen', "<p>BroadcastPlayerData</p>");
+        this.io.to(this.serverData.room).emit('player_data_update', this.playerData);
+        //this.io.to(this.serverData.room).emit('player_speak', {"Language":"Deutsch Female","Text":"BroadcastPlayerData"});
+        //this.io.to(this.serverData.room).emit('clear_screen', {"Language":"Deutsch Female","Text":"BroadcastPlayerData"});
+        //this.io.to(this.serverData.room).emit('draw_screen', "<p>BroadcastPlayerData</p>");
     }
 
     resetTimers() {
         clearTimeout(this.timeoutObject);
         clearTimeout(this.intervalTimer);
-        this.secondCount = 0;
+        this.secondsLeftInPhase = 0;
     }
 
     setTimersForCurrentPhase() {
-        var phaseTime = this.phaseTimeouts[this.currentPhaseString()];
+        var phaseTime = this.serverData.phaseTimeouts[this.currentPhaseString()];
         this.timeoutObject = setTimeout(this.nextPhase.bind(this), phaseTime * 1000);
-        this.secondCount = phaseTime - 1;
+        this.secondsLeftInPhase = phaseTime - 1;
         this.intervalTimer = setTimeout(this.timerUpdate.bind(this), 1000);
     }
 
     /*setRoomName(roomName)
     {
-        this.roomName = roomName;
+        this.serverData.roomName = roomName;
     }
     */
     getRoomName() {
-        return this.room;
+        return this.serverData.room;
     }
 
-    //This initializes the special roles according to this.roleConfig
+    //This initializes the special roles according to this.serverData.roleConfig
     initSpecialRoles() {
         //TODO: for each random role, draw a player from a shuffled list of UUIDs and assign it to them, then remove from the list. If list empty -> done
         console.log("Initializing roles!");
@@ -190,13 +207,13 @@ class GamePhaseHandler {
         //Randomize
         UUIDList = shuffle(UUIDList);
         //this.printAllUUIDS();
-        //foreach role in this.roleConfig
-        for (var role in this.roleConfig) {
-            if (this.roleConfig.hasOwnProperty(role)) {
+        //foreach role in this.serverData.roleConfig
+        for (var role in this.serverData.roleConfig) {
+            if (this.serverData.roleConfig.hasOwnProperty(role)) {
                 //Example:
-                //role == "Werewolf", this.roleConfig[role] == 2
+                //role == "Werewolf", this.serverData.roleConfig[role] == 2
                 //Iterate over number of roles
-                for (var numRole = 0; numRole < this.roleConfig[role]; numRole++) {
+                for (var numRole = 0; numRole < this.serverData.roleConfig[role]; numRole++) {
                     if (UUIDList.length == 0) {
                         console.log("All players have roles, stopping now!");
                         //this.printAllUUIDS();
@@ -242,7 +259,7 @@ class GamePhaseHandler {
             not_all_connected_error();
             return;
         }
-        this.gameStarted = 1;
+        this.gameState.gameStarted = 1;
 
         //TODO/DONE: assign roles using some configurable settings object in class (using sensible default values)
         this.initSpecialRoles();
@@ -271,12 +288,13 @@ class GamePhaseHandler {
 
     //This timer just runs every second to provide a timer for the clients. Does not need to be very accurate.
     timerUpdate() {
-        console.log("Timer Update: " + this.secondCount);
-        if(this.secondCount<=10)
+        this.secondsLeftInPhase--;
+        console.log("Timer Update: " + this.secondsLeftInPhase);
+        if(this.secondsLeftInPhase<=10)
         {
-            this.io.to(this.room).emit('player_speak', {"Language":this.GameLanguage.toString(),"Text":this.secondCount.toString()});
+            this.io.to(this.serverData.room).emit('player_speak', {"Language":this.serverData.language.toString(),"Text":this.secondsLeftInPhase.toString()});
         }
-        this.io.to(this.room).emit('time_update', this.secondCount--);
+        this.io.to(this.serverData.room).emit('time_update', this.secondsLeftInPhase);
         this.intervalTimer = setTimeout(this.timerUpdate.bind(this), 1000);
     }
 
@@ -328,7 +346,7 @@ class GamePhaseHandler {
     }
 
     isGameStarted() {
-        return this.gameStarted;
+        return this.gameState.gameStarted;
     }
 
     startPhase(phase) {
