@@ -166,6 +166,7 @@ function roomListCardClick(object) {
 }
 
 function createPlayerInfoCard(playerInfo) {
+  //TODO:IF player.isdead -> mark as dead
   //{type:"Fiat", model:"500", color:"white"};
   var template = $('#CARD_TEMPLATE');
   var templateCopy = template.clone();
