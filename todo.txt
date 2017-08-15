@@ -4,7 +4,7 @@ Implement a generic server-config object (server-side), which gets sent to the c
     var serverConfig = [
 
       {
-        //This could also be initialized from the localization file.
+        //This could also be initialized from the localization file, but will need more work, as the client will need to choose language at the same time the config is done.
         configName: "Number of Werewolves",
         configNameInternal: "numWerewolves",
         configType: "intInput",

@@ -239,7 +239,7 @@ $('#JOIN_SCREEN_BUTTON').click(function () {
 
 $('#CREATE_SCREEN_BUTTON').click(function () {
   console.log("CREATE Screen");
-  socket.emit('buttonPressed', "CreateScreen");
+  socket.emit('require_room_config', 1);
   //Unhide next element hide myself
   //$(this).parent().parent().hide();
   //$(this).parent().parent().next('section').show();

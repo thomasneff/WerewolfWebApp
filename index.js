@@ -94,6 +94,11 @@ function guidGenerator() {
 //Functions for Server-Callbacks
 io.on('connection', function (socket) {
   //console.log("CONNECTION");
+
+  socket.on('require_room_config', function (msg) {
+    console.log("REQUIRE_ROOM_CONFIG!!!!");
+  });
+
   //This event is received when a client selects another player (vote)
   socket.on('player_vote', function (msg) {
 
