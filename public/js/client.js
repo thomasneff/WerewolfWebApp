@@ -364,7 +364,6 @@ window.onpopstate = function (event) {
       {
         //We want to go "forward" again
         currentScreen = "JoinServerScreen";
-        window.history.pushState(currentScreen, "");
         hideShowSection($("#RoomList"), $("#JoinServerScreen"));
       }
 
@@ -383,7 +382,6 @@ window.onpopstate = function (event) {
       {
         //We want to go "forward" again
         currentScreen = "CreateServerScreen";
-        window.history.pushState(currentScreen, "");
         hideShowSection($("#RoomList"), $("#CreateServerScreen"));
       }
   }

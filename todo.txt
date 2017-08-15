@@ -1,3 +1,5 @@
+On room create send updated roomlist to all clients in room list channel
+
 Implement a generic server-config object (server-side), which gets sent to the client for the config page.
   - Could look something like this:
     //List of objects, which is sent to the client. Client then creates the config UI from this.
@@ -21,8 +23,6 @@ Implement a generic server-config object (server-side), which gets sent to the c
       //...
     ]
 
-
-Clear previous inputs if client gets rejected from joining (because of password)?
 
 
 Game needs a disconnect button (needs to remove client from GameHandler and show room list again.)
