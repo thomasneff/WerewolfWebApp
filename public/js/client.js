@@ -17,6 +17,10 @@ var currentScreen = "RoomList";
 
 //General functions
 $(function () {
+
+  //Push RoomList to history
+  window.history.pushState(currentScreen, "");
+
   //On startup check if UUID already exists, otherwise create one and send to server
   if (localStorage.hasOwnProperty("werewolfAppID")) {
     clientUUID = localStorage.getItem("werewolfAppID")
@@ -83,6 +87,7 @@ function changeOwnPlayerInfo(playerInfo) {
 
   //Change Character Related Stuff:
   $("#CHARACTER_NAME").text(playerInfo.role);
+  currentScreen = "GameScreen";
 }
 
 function updatePlayerData(playerData) {
@@ -232,6 +237,7 @@ $('#CREATE_SCREEN_BUTTON').click(function () {
   socket.emit('require_room_config', 1);
   //push to history for back button functionality :)
   currentScreen = "CreateServerScreen";
+  console.log("PUSHING CREATE");
   window.history.pushState(currentScreen, "");
   //Hide join section, show game section
   hideShowSection($("#RoomList"), $("#CreateServerScreen"));
@@ -269,7 +275,7 @@ $('#CREATE_BUTTON').click(function () {
 
   //DON'T DO THAT IF SERVER CREATION FAILS!!
   //Hide join section, show game section
-  //currentScreen = "GameScreen";
+
   //hideShowSection($("#CreateServerScreen"), $("#GameScreen"));
 
 });
@@ -285,20 +291,27 @@ $('#CREATE_BACK_BUTTON').click(function () {
   console.log("BACK PRESSED");
   //TODO: Refresh Serverlist ?!?
 
-  currentScreen = "RoomList"
+  //This pushes our current state (CreateServerScreen)
   window.history.pushState(currentScreen, "");
+  //This calls popstate and switches us back to RoomList automatically.
+  //This also allows us to use the "forward" browser action afterwards
+  window.history.go(-1);
 
-  hideShowSection($("#CreateServerScreen"), $("#RoomList"));
+  //hideShowSection($("#CreateServerScreen"), $("#RoomList"));
 });
 
 $('#JOIN_BACK_BUTTON').click(function () {
   console.log("BACK PRESSED");
 
-  currentScreen = "RoomList"
+  //This pushes our current state (JoinServerScreen)
   window.history.pushState(currentScreen, "");
+  //This calls popstate and switches us back to RoomList automatically.
+  //This also allows us to use the "forward" browser action afterwards
+  window.history.go(-1);
+
 
   //TODO: Refresh Serverlist ?!?
-  hideShowSection($("#JoinServerScreen"), $("#RoomList"));
+  //hideShowSection($("#JoinServerScreen"), $("#RoomList"));
 });
 
 $('#READY_BUTTON').click(function () {
@@ -312,7 +325,7 @@ $('#DISCONNECT_BUTTON').click(function () {
   console.log("DISCONNECT PRESSED");
 
   //TODO: send event to server, maybe request confirm at client?
-  
+
 });
 
 
@@ -367,9 +380,24 @@ clientInputField.on('change', imageFileHandler);
 
 window.onpopstate = function (event) {
 
-  console.log(event);
+  console.log("Event: " + event.state + " currentScreen: " + currentScreen);
+  if (event.state == "RoomList") // get the current state from the event obj
+  {
+    //this means we want to go back to RoomList.
+    if (currentScreen == "JoinServerScreen") {
+      //If we were on "JoinServerScreen", we hide it and show the start screen again.
+      //Hide join section, show room list
+      currentScreen = "RoomList";
+      hideShowSection($("#JoinServerScreen"), $("#RoomList"));
+    }
+    else if (currentScreen == "CreateServerScreen") {
+      //We want to go "forward" again
+      currentScreen = "RoomList";
+      hideShowSection($("#CreateServerScreen"), $("#RoomList"));
+    }
 
-  if (event.state == "JoinServerScreen") // get the current state from the event obj
+  }
+  else if (event.state == "JoinServerScreen") // get the current state from the event obj
   {
     if (currentScreen == "JoinServerScreen") {
       //If we were on "JoinServerScreen", we hide it and show the start screen again.
@@ -400,6 +428,7 @@ window.onpopstate = function (event) {
       hideShowSection($("#RoomList"), $("#CreateServerScreen"));
     }
   }
+
   //location.reload(); // reloads the current page to clear ajax changes
 };
 
