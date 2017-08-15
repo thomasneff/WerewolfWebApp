@@ -161,7 +161,7 @@ function roomListCardClick(object) {
   //push to history for back button functionality :)
   currentScreen = "JoinServerScreen";
   window.history.pushState(currentScreen, "");
-  
+
   hideShowSection($("#RoomList"), $("#JoinServerScreen"));
 }
 
@@ -266,8 +266,8 @@ $('#CREATE_BUTTON').click(function () {
   //Create should also automatically join.
   //TODO: maybe we should store all the input form val()'s in js variables / objects?
   socket.emit('join_room', { UUID: clientUUID, pass: pass, room: room, name: playerName, img: playerImage });
-  
-    //DON'T DO THAT IF SERVER CREATION FAILS!!
+
+  //DON'T DO THAT IF SERVER CREATION FAILS!!
   //Hide join section, show game section
   //currentScreen = "GameScreen";
   //hideShowSection($("#CreateServerScreen"), $("#GameScreen"));
@@ -283,13 +283,21 @@ $('#JOIN_BUTTON').click(function () {
 
 $('#CREATE_BACK_BUTTON').click(function () {
   console.log("BACK PRESSED");
-    //TODO: Refresh Serverlist ?!?
+  //TODO: Refresh Serverlist ?!?
+
+  currentScreen = "RoomList"
+  window.history.pushState(currentScreen, "");
+
   hideShowSection($("#CreateServerScreen"), $("#RoomList"));
 });
 
 $('#JOIN_BACK_BUTTON').click(function () {
   console.log("BACK PRESSED");
-    //TODO: Refresh Serverlist ?!?
+
+  currentScreen = "RoomList"
+  window.history.pushState(currentScreen, "");
+
+  //TODO: Refresh Serverlist ?!?
   hideShowSection($("#JoinServerScreen"), $("#RoomList"));
 });
 
@@ -299,6 +307,15 @@ $('#READY_BUTTON').click(function () {
   socket.emit('ready', { UUID: clientUUID, ready: 1 });
   socket.emit('start', { UUID: clientUUID });
 });
+
+$('#DISCONNECT_BUTTON').click(function () {
+  console.log("DISCONNECT PRESSED");
+
+  //TODO: send event to server, maybe request confirm at client?
+  
+});
+
+
 
 /*
 $('#PLAYER_NAME_INPUT').bind('input', function () {
@@ -360,12 +377,11 @@ window.onpopstate = function (event) {
       currentScreen = "RoomList";
       hideShowSection($("#JoinServerScreen"), $("#RoomList"));
     }
-    else if (currentScreen == "RoomList")
-      {
-        //We want to go "forward" again
-        currentScreen = "JoinServerScreen";
-        hideShowSection($("#RoomList"), $("#JoinServerScreen"));
-      }
+    else if (currentScreen == "RoomList") {
+      //We want to go "forward" again
+      currentScreen = "JoinServerScreen";
+      hideShowSection($("#RoomList"), $("#JoinServerScreen"));
+    }
 
   }
   else if (event.state == "GameScreen") {
@@ -378,12 +394,11 @@ window.onpopstate = function (event) {
       currentScreen = "RoomList";
       hideShowSection($("#CreateServerScreen"), $("#RoomList"));
     }
-    else if (currentScreen == "RoomList")
-      {
-        //We want to go "forward" again
-        currentScreen = "CreateServerScreen";
-        hideShowSection($("#RoomList"), $("#CreateServerScreen"));
-      }
+    else if (currentScreen == "RoomList") {
+      //We want to go "forward" again
+      currentScreen = "CreateServerScreen";
+      hideShowSection($("#RoomList"), $("#CreateServerScreen"));
+    }
   }
   //location.reload(); // reloads the current page to clear ajax changes
 };
