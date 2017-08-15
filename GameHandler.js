@@ -18,22 +18,30 @@ class GamePhaseHandler {
         this.playerData = {};
 
         this.serverData = {
-            "room" : options.serverData.room,
-            "pass" : "" || options.serverData.password,
-            "language" : "Deutsch Female" || options.serverData.language,
+            "room": options.serverData.room,
+            "pass": "" || options.serverData.pass,
+            "language": "Deutsch Female" || options.serverData.language,
+            //The host is the one creating the room. Yes, this currently allows a client to supply a different UUID to create a game (different from his own), but whatever.
+
+            //These things need to be updated/queried when serverData is sent.
+            "host": options.UUID,
+            "hostImg": options.img,
+            "hostName": options.name,
+            "numPlayers": 1,
+
             //This contains the number of each of the special roles. For convenience, the attributes are *exactly* the same as the internal role names
-            "roleConfig" : {
+            "roleConfig": {
                 "Werewolf": 1,
                 "Witch": 0,
                 "Seer": 0, //etc... Townspeople are always all the remaining players
             } || options.roleConfig,
 
             //This contains the number of seconds for each phase until timeout.
-            "phaseTimeouts" : {
+            "phaseTimeouts": {
                 "Day": 300,
                 "Werewolves": 10
-            } || options.phaseTimeouts,  
-            
+            } || options.phaseTimeouts,
+
         };
 
         this.gameState = {
@@ -45,13 +53,13 @@ class GamePhaseHandler {
 
 
         this.timeoutObject = null;
-     
+
         //This is the socket for the whole room
         this.io = io;
-       
+
         //This is just for displaying the current timer to the clients.
         this.intervalTimer = null;
-        
+
         //This maps from UUID to specific sockets so we can communicate with specific players (e.g. host, specific roles...)
         this.UUIDSocketMap = {};
 
@@ -59,6 +67,59 @@ class GamePhaseHandler {
         //TODO: this should/could contain an object for each UUID, to enable specifics e.g. witch save/heal, ...
         //TODO: should we refactor this into serverData? Does that make sense?
         this.votes = {};
+
+
+        //init UUID in playerData for host
+        this.checkAndCreateUUID(options.UUID);
+
+        //init host image, name from options
+        this.initPlayerDataFromOptions(options);
+
+    }
+
+    initPlayerDataFromOptions(options) {
+        this.playerData[options.UUID].img = options.img;
+        this.playerData[options.UUID].name = options.name;
+    }
+
+    getGameState() {
+        return this.gameState;
+    }
+
+    getRoomListData() {
+        //Update server data
+        this.getUpdatedHostServerData();
+
+        var roomListObject = {
+            'room': this.serverData.room,
+            'host': this.serverData.host,
+            'hostName': this.serverData.hostName,
+            'hostImg': this.serverData.hostImg,
+            'numPlayers': this.serverData.numPlayers,
+            'language': this.serverData.language
+        }
+
+        return roomListObject;
+    }
+
+    getUpdatedHostServerData() {
+        this.serverData.hostImg = this.playerData[this.serverData.host].img;
+
+        this.serverData.hostName = this.playerData[this.serverData.host].name;
+
+        var numPlayers = 0;
+
+        //@Speed: use a separate array of UUIDs so we don't have to iterate over this object every time?
+        for (var UUID in this.playerData) {
+            if (this.playerData.hasOwnProperty(UUID)) {
+                numPlayers++;
+            }
+        }
+
+        this.serverData.numPlayers = numPlayers;
+
+        //NOTE: don't send this to clients, as it contains the room password...
+        return this.serverData;
     }
 
     printAllUUIDS() {
@@ -73,7 +134,12 @@ class GamePhaseHandler {
         if (!(UUID in this.playerData)) {
             //make new object for UUID if it doesn't exist yet
             //NOTE: here we can also do initialization for new players for internal state variables
-            this.playerData[UUID] = { canVote: 0, role: 'Townsperson', UUID: UUID};
+            this.playerData[UUID] = {
+                canVote: 0,
+                role: 'Townsperson',
+                UUID: UUID,
+                isHost: this.serverData.host == UUID,
+            };
         }
     }
 
@@ -105,6 +171,8 @@ class GamePhaseHandler {
         console.log("Player attribute " + key + " changed to " + value + " (UUID: " + UUID + ")");
         //this.printAllUUIDS();
     }
+
+
 
     addUUIDSocket(UUID, socket) {
         this.checkAndCreateUUID(UUID);
@@ -219,7 +287,7 @@ class GamePhaseHandler {
                         //this.printAllUUIDS();
                         return;
                     }
-                  //Get random player
+                    //Get random player
                     var playerUUID = UUIDList.pop();
                     if (playerUUID == undefined) {
                         console.log("OMGOMGOMGOMGOMG 3");
@@ -290,9 +358,8 @@ class GamePhaseHandler {
     timerUpdate() {
         this.secondsLeftInPhase--;
         console.log("Timer Update: " + this.secondsLeftInPhase);
-        if(this.secondsLeftInPhase<=10)
-        {
-            this.io.to(this.serverData.room).emit('player_speak', {"Language":this.serverData.language.toString(),"Text":this.secondsLeftInPhase.toString()});
+        if (this.secondsLeftInPhase <= 10) {
+            this.io.to(this.serverData.room).emit('player_speak', { "Language": this.serverData.language.toString(), "Text": this.secondsLeftInPhase.toString() });
         }
         this.io.to(this.serverData.room).emit('time_update', this.secondsLeftInPhase);
         this.intervalTimer = setTimeout(this.timerUpdate.bind(this), 1000);

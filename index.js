@@ -52,27 +52,29 @@ function checkSocketAndGivenUUID(UUID, socket) {
   return true;
 }
 
-function buildRoomListObject() {
-  //Iterate over all GamePhaseHandlers (which are open games), check if they are running or not (we can only join if they are not running)
-  //And get RoomInfo from the GamePhaseHandler
+function getRoomList() {
+  //Iterate over all GameHandlers (which are open games), check if they are running or not (we can only join if they are not running)
+  //And get RoomInfo from the GameHandler
   roomList = [];
 
-  for (var UUID in GamePhaseHandlers) {
+  for (var UUID in GameHandlers) {
 
-    if (GamePhaseHandlers.hasOwnProperty(UUID)) {
+    if (GameHandlers.hasOwnProperty(UUID)) {
 
-      var handler = GamePhaseHandlers[UUID];
+      var handler = GameHandlers[UUID];
 
       //Skip over running games
       if (handler.isGameStarted()) {
         continue;
       }
 
-      roomList.push(handler.getRoomInfo());
+      roomList.push(handler.getRoomListData());
 
     }
 
   }
+
+  return roomList;
 }
 
 function guidGenerator() {
@@ -90,6 +92,7 @@ io.on('connection', function (socket) {
 
     if (checkSocketAndGivenUUID(msg.UUID, socket) == false) {
       //Someone sent a wrong UUID.
+      console.log("WRONG UUID IN player_vote");
       return;
     }
 
@@ -138,7 +141,9 @@ io.on('connection', function (socket) {
 
     //emit a message saying that we are on the start screen, in addition to the "Room List"
 
-    socket.emit("start_screen", 1);
+    roomList = getRoomList();
+
+    socket.emit("room_list", roomList);
 
     socket.join("ROOM_LIST_ROOM_WHICH_CAN_NOT_BE_SELECTED_AS_A_NAME_BY_ANY_HOST");
     console.log("Socket with UUID " + msg.UUID + " joined room list!");
@@ -153,6 +158,7 @@ io.on('connection', function (socket) {
 
     if (checkSocketAndGivenUUID(msg.UUID, socket) == false) {
       //Someone sent a wrong UUID.
+      console.log("WRONG UUID IN join_room");
       return;
     }
 
@@ -161,6 +167,10 @@ io.on('connection', function (socket) {
       console.log("Cannot join room " + msg.room + " as it doesn't exist. By UUID " + msg.UUID);
       return;
     }
+
+    var handler = GameHandlers[msg.room];
+
+    //TODO: check if necessary?
     /*if (msg.UUID in UUIDSocketMap && msg.UUID in UUIDRoomMap) {
       //check if we were already connected.
       console.log("Was already connected, just resending data.");
@@ -173,30 +183,66 @@ io.on('connection', function (socket) {
       }
       return;
     }*/
+
+
     //If we were not in the room, but trying to join, we need to check if the game is already running.
     //This should probably never happen unless someone uses the browser console to send join events to specific games.
-    if (msg.room in GameHandlers) {
-      if (msg.room in RoomGameStarted) {
-        if (RoomGameStarted[msg.room] != 0) {
-          console.log("Game in room " + msg.room + " is already running, can not join! Will join random room UUID: " + msg.UUID);
-          socket.join(guidGenerator());
-          return;
-        }
-      }
+    if (handler.getGameState().gameStarted != 0) {
+      console.log("Game in room " + msg.room + " is already running, can not join! UUID: " + msg.UUID);
+
+      socket.leaveAll();
+
+      roomList = getRoomList();
+
+      socket.emit("room_list", roomList);
+
+      //Join roomList again, and send "room_list" event again.
+      socket.join("ROOM_LIST_ROOM_WHICH_CAN_NOT_BE_SELECTED_AS_A_NAME_BY_ANY_HOST");
+
+
+      return;
     }
+
+    //Check for password match
+    //TODO: plaintext passwords suck, I guess, but we probably just have to hash the passwords when we send them or something and we'll be fine.
+    //If pass is blank ("") we'll just skip the check as well.
+    if (handler.getUpdatedHostServerData().pass != "" && handler.getUpdatedHostServerData().pass != msg.pass) {
+      console.log("Wrong password for room " + msg.room + "!");
+      console.log("Is: " + msg.pass + " | Should be: " + handler.getUpdatedHostServerData().pass);
+
+      socket.leaveAll();
+
+      roomList = getRoomList();
+
+      socket.emit("room_list", roomList);
+
+      //Join roomList again, and send "room_list" event again.
+      socket.join("ROOM_LIST_ROOM_WHICH_CAN_NOT_BE_SELECTED_AS_A_NAME_BY_ANY_HOST");
+      return;
+    }
+
+
+
+
     //UUIDSocketMap[msg.UUID] = socket;
     UUIDRoomMap[msg.UUID] = msg.room;
     socket.leaveAll();
     socket.join(msg.room);
+
     console.log("Socket with UUID " + msg.UUID + " joined room " + msg.room);
     //console.log("Connected clients: " + io.sockets.clients(msg.room));
     //NOTE: if you want to send a message to just a specific room, use this
     //io.to(msg.room).emit("join_ack", "JOIN ACKED SERVER BLA");
     //add specific socket to GameHandler so we can send specific messages to each player
-    GameHandlers[msg.room].addUUIDSocket(msg.UUID, socket);
+    handler.addUUIDSocket(msg.UUID, socket);
+
+    //Init player from other message content, such as name, image
+    handler.initPlayerDataFromOptions(msg);
     //GameHandlers[msg.room].printAllUUIDS();
     //broadcast initial state so all players get stuff upon connecting
-    GameHandlers[msg.room].broadcastPlayerData();
+    handler.broadcastPlayerData();
+
+   
   });
   socket.on('create_room', function (msg) {
     //msg has to contain the different options for the game
@@ -220,6 +266,8 @@ io.on('connection', function (socket) {
     }
   });
 
+  //name and image change are obsolete now, as this all happens when you create/join a room.
+  /*
   socket.on('name_change', function (msg) {
 
     if (checkSocketAndGivenUUID(msg.UUID, socket) == false) {
@@ -239,7 +287,7 @@ io.on('connection', function (socket) {
       console.log("Game is not started yet, cannot change name by " + msg.UUID);
     }
   });
-
+ 
   socket.on('image_change', function (msg) {
 
     if (checkSocketAndGivenUUID(msg.UUID, socket) == false) {
@@ -256,11 +304,12 @@ io.on('connection', function (socket) {
       handler.broadcastPlayerData();
     }
   });
-
+  */
   socket.on('ready', function (msg) {
 
     if (checkSocketAndGivenUUID(msg.UUID, socket) == false) {
       //Someone sent a wrong UUID.
+      console.log("WRONG UUID IN ready");
       return;
     }
 
@@ -280,6 +329,7 @@ io.on('connection', function (socket) {
 
     if (checkSocketAndGivenUUID(msg.UUID, socket) == false) {
       //Someone sent a wrong UUID.
+      console.log("WRONG UUID IN start");
       return;
     }
 

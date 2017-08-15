@@ -3,10 +3,16 @@ var cardState = 0;
 var canVote = 0;
 var ttsEnabled = 0;
 
-var $inputField = $('#file');
+var serverInputField = $('#serverImageUploadInput');
+var clientInputField = $('#clientImageUploadInput');
 
 var clientUUID = null;
 var socket = io();
+
+var playerImage = null;
+
+var roomToJoin = null;
+
 
 //General functions
 $(function () {
@@ -37,16 +43,26 @@ $(function () {
 
   socket.on('already_ingame', function (msg) {
     //we were already in a game, simply show that again.
-    hideShowSection($("#StartScreen"), $("#GameScreen"));
-    
+    hideShowSection($("#RoomList"), $("#GameScreen"));
+
     console.log("received already-ingame");
   });
 
   //We have this extra event so the view doesn't flicker through showing/hiding of sections.
-  socket.on('start_screen', function () {
+  socket.on('room_list', function (roomList) {
     console.log("Start screen will be shown.")
 
-    $('#StartScreen').show();
+    $('#GENERATED_ROOM_LIST').empty();
+
+    roomList.forEach(function (roomInfo) {
+      createRoomListCard(roomInfo)
+    }, this);
+
+    $('#GameScreen').hide();
+    $('#JoinServerScreen').hide();
+    $('#CreateServerScreen').hide();
+
+    $('#RoomList').show();
   });
 
 
@@ -63,18 +79,27 @@ $(function () {
 //Player related stuff:
 function changeOwnPlayerInfo(playerInfo) {
   $("#PLAYER_NAME").text(playerInfo.name);
-  $('#PLAYER_NAME_INPUT').val(playerInfo.name);
+  //$('#PLAYER_NAME_INPUT').val(playerInfo.name);
   canVote = playerInfo.canVote;
-  if(playerInfo.gameStarted == 1)
-    {
-      $('#READY_BUTTON').hide();
-      $('#READY_BUTTON').prop("disabled", true);
-    }
-  
+  if (playerInfo.gameStarted == 1) {
+    $('#READY_BUTTON').hide();
+    $('#READY_BUTTON').prop("disabled", true);
+  }
+
   $("#PHASE_NAME").text("Phase: " + playerInfo.gamePhase);
 }
 
 function updatePlayerData(playerData) {
+
+
+  //If we receive playerData, we must be in game. Hide everything else.
+
+  $('#RoomList').hide();
+  $('#JoinServerScreen').hide();
+  $('#CreateServerScreen').hide();
+
+  $('#GameScreen').show();
+
   //clear all cards
   $('#GENERATED_CARDS').empty();
   //iterate over all things in playerData
@@ -87,7 +112,7 @@ function updatePlayerData(playerData) {
         changeOwnPlayerInfo(obj);
       }
       else {
-        createCard(obj);
+        createPlayerInfoCard(obj);
         console.log("Created card with UUID " + obj.UUID);
       }
     }
@@ -115,7 +140,39 @@ function UserReady(object) {
   object.prop("disabled", true);
 }
 
-function createCard(playerInfo) {
+
+function createRoomListCard(roomInfo) {
+  //{type:"Fiat", model:"500", color:"white"};
+  var template = $('#ROOMLIST_CARD_TEMPLATE');
+  var templateCopy = template.clone();
+  //templateCopy.attr("id",  playerInfo.UUID);
+  templateCopy.find('.room-name').text(roomInfo.room);
+  templateCopy.find('.room-img').attr("src", roomInfo.hostImg);
+  templateCopy.find('.room-numPlayers').text("Connected: " + roomInfo.numPlayers);
+  templateCopy.find('.room-hostName').text("Host: " + roomInfo.hostName);
+  //console.log("PLAYERINFO UUID: " + playerInfo.UUID);
+  //console.log("CARD ATTR ID before: " + templateCopy.find('.card').attr("id"));
+  templateCopy.find('.card').attr("id", roomInfo.room);
+  //console.log("CARD ATTR ID after: " + templateCopy.find('.card').attr("id"));
+  //TODO: image data, just base64 encode the image and send it via the socket
+  templateCopy.appendTo($('#GENERATED_ROOM_LIST'));
+  templateCopy.on('click', null, function () {
+    roomListCardClick($(this).find('.card'));
+  });
+  templateCopy.show();
+}
+
+function roomListCardClick(object) {
+  console.log("Called with " + object);
+  //TODO: save room name, show join screen with password, upon join send all stuff
+
+  roomToJoin = object.attr('id');
+
+  hideShowSection($("#RoomList"), $("#JoinServerScreen"));
+
+}
+
+function createPlayerInfoCard(playerInfo) {
   //{type:"Fiat", model:"500", color:"white"};
   var template = $('#CARD_TEMPLATE');
   var templateCopy = template.clone();
@@ -129,7 +186,7 @@ function createCard(playerInfo) {
   //TODO: image data, just base64 encode the image and send it via the socket
   templateCopy.appendTo($('#GENERATED_CARDS'));
   templateCopy.on('click', null, function () {
-    cardClick($(this).find('.card'));
+    playerInfoCardClick($(this).find('.card'));
   });
   templateCopy.show();
 }
@@ -138,7 +195,7 @@ function Speak(SpeakInfo) {
   responsiveVoice.speak(SpeakInfo.Text, SpeakInfo.Language);
 }
 
-function cardClick(object) {
+function playerInfoCardClick(object) {
   console.log("Called with " + object);
   //console.log($(this));
   //Server also checks this.
@@ -176,7 +233,7 @@ $('#JOIN_SCREEN_BUTTON').click(function () {
   //$(this).parent().parent().parent().next('section').next('section').show();
 
   //Hide join section, show game section
-  hideShowSection($("#StartScreen"), $("#JoinServerScreen"));
+  hideShowSection($("#RoomList"), $("#JoinServerScreen"));
 
 });
 
@@ -188,23 +245,32 @@ $('#CREATE_SCREEN_BUTTON').click(function () {
   //$(this).parent().parent().next('section').show();
 
   //Hide join section, show game section
-  hideShowSection($("#StartScreen"), $("#CreateServerScreen"));
+  hideShowSection($("#RoomList"), $("#CreateServerScreen"));
 });
 
 $('#CREATE_BUTTON').click(function () {
   console.log("CREATE PRESSED");
 
-  console.log("Roomname: " + $('#SERVER_NAME_INPUT').val());
-  console.log("RoomPwd: " + $('#SERVER_PWD_INPUT').val());
+  var pass = $('#SERVER_PWD_INPUT').val();
+  var room = $('#SERVER_NAME_INPUT').val()
+  var playerName = $('#SERVER_PLAYER_NAME_INPUT').val()
+
+  console.log("Roomname: " + room);
+  console.log("RoomPwd: " + pass);
+
+
 
   socket.emit('create_room', {
     UUID: clientUUID,
-    
+    name: playerName,
+    img: playerImage,
+
     serverData: {
-      room: $('#SERVER_NAME_INPUT').val(),
-      password: $('#SERVER_PWD_INPUT').val(),
+      room: room,
+      pass: pass,
+      host: clientUUID
     },
-    
+
     phaseTimeouts: {
       "Day": 30,
       "Werewolves": 10
@@ -213,7 +279,7 @@ $('#CREATE_BUTTON').click(function () {
 
   //Create should also automatically join.
   //TODO: maybe we should store all the input form val()'s in js variables / objects?
-  socket.emit('join_room', { UUID: clientUUID, room: $('#SERVER_NAME_INPUT').val() });
+  socket.emit('join_room', { UUID: clientUUID, pass: pass, room: room, name: playerName, img: playerImage });
 
   //Unhide next element hide myself
   //$(this).parent().parent().hide();
@@ -226,12 +292,18 @@ $('#CREATE_BUTTON').click(function () {
 $('#JOIN_BUTTON').click(function () {
   console.log("JOIN PRESSED");
 
-  socket.emit('join_room', { UUID: clientUUID, room: $('#SERVER_NAME_INPUT').val() });
+  var name = $('#CLIENT_PLAYER_NAME_INPUT').val()
+  var pass = $("#CLIENT_PWD_INPUT").val()
+
+
+  //console.log("NAME " + name);
+  //console.log("PASS " + pass);
+
+  socket.emit('join_room', { UUID: clientUUID, name: name, img: playerImage, room: roomToJoin, pass: pass });
   //$(this).parent().parent().hide();
   //$(this).parent().parent().next('section').show();
 
-  //Hide join section, show game section
-  hideShowSection($("#JoinServerScreen"), $("#GameScreen"));
+  //The hiding/showing of the screens/views is done in the "join_ack" event.
 });
 
 $('#READY_BUTTON').click(function () {
@@ -243,17 +315,17 @@ $('#READY_BUTTON').click(function () {
   //$(this).parent().parent().parent().next('section').show();
 });
 
+/*
 $('#PLAYER_NAME_INPUT').bind('input', function () {
   console.log("INPUT CHANGED " + $(this).val());
   socket.emit('name_change', { UUID: clientUUID, name: $(this).val() });
-});
+});*/
 
 $('.info-card').click(function () {
   responsiveVoice.speak("");
   ttsEnabled = 1;
   console.log("TTS ENABLED")
   //handleFile();
-  //createCard({ name: "ANUSNAME" });
   if (cardState == 1) {
     $(this).removeClass('flipped_front');
     $(this).addClass('flipped_back');
@@ -266,7 +338,10 @@ $('.info-card').click(function () {
   }
 });
 
-$inputField.on('change', function (e) {
+
+function imageFileHandler(e)
+{
+  //console.log("IMAGEFILEHANDLER");
   var file = e.target.files[0];
   if (file) {
     if (/^image\//i.test(file.type)) {
@@ -274,6 +349,8 @@ $inputField.on('change', function (e) {
       readFile(file, function (base64Image) {
         //callback for sending image to the server
         //TODO: maybe also use an object on client-side, similar to playerData on server-side
+        playerImage = base64Image;
+        //console.log("IMAGE SET!");
         socket.emit('image_change', { UUID: clientUUID, img: base64Image });
       }
       );
@@ -281,5 +358,9 @@ $inputField.on('change', function (e) {
       alert('Not a valid image!');
     }
   }
-});
+}
+
+
+serverInputField.on('change', imageFileHandler);
+clientInputField.on('change', imageFileHandler);
 
