@@ -1,16 +1,39 @@
-Maybe think about encryption (e.g. using https://github.com/auth0/socketio-jwt , https://wmyers.github.io/technical/nodejs/Simple-JWT-auth-for-SocketIO/ ), if it is easy to implement.
+Implement a generic server-config object (server-side), which gets sent to the client for the config page.
+  - Could look something like this:
+    //List of objects, which is sent to the client. Client then creates the config UI from this.
+    var serverConfig = [
 
-Force name to be entered (min 1 character) on client-side & server-side (server-side just reject similar to password fail).
+      {
+        //This could also be initialized from the localization file.
+        configName: "Number of Werewolves",
+        configNameInternal: "numWerewolves",
+        configType: "intInput",
+        initVal: 2
+      },
 
-Change Broadcast of playerData so it only gets sent to the specific player (e.g. Player1 refreshes, only he gets a message, not everyone.)
+      {
+        configName: "Timeout in seconds for Phase 'Werewolf'",
+        configNameInternal: "phaseTimeWerewolf",
+        configType: "intInput",
+        initVal: 10
+      },
+
+      //...
+    ]
+
+Join/Create needs a back button. (Which is just hide/show of the current view.)
+
+Force name to be entered (min 1 character) on client-side & server-side (server-side just reject similar to password fail, client-side could throw an alert or something?)
 
 Clear previous inputs if client gets rejected from joining (because of password)?
 
-Join/Create needs a back button.
-
 Game needs a disconnect button (needs to remove client from GameHandler and show room list again.)
 
+Change Broadcast of playerData so it only gets sent to the specific player (e.g. Player1 refreshes, only he gets a message, not everyone.)
 
+
+      
+    
 
 
 Replace ugly image file upload button with player-data clickable image, maybe at the side of the player name 
@@ -43,6 +66,6 @@ Win-Condition on Server-Side
 
 
 
+Maybe think about encryption (e.g. using https://github.com/auth0/socketio-jwt , https://wmyers.github.io/technical/nodejs/Simple-JWT-auth-for-SocketIO/ ), if it is easy to implement.
 
-
-Implement special roles
+Implement special roles *AFTER* Townspeople/Werewolves is working perfectly. Implement and test step by step, one by one to prevent overarching errors.
