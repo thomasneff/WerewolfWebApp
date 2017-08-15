@@ -13,6 +13,7 @@ var playerImage = null;
 
 var roomToJoin = null;
 
+var currentScreen = "RoomList";
 
 //General functions
 $(function () {
@@ -46,7 +47,8 @@ $(function () {
   socket.on('already_ingame', function (msg) {
     //we were already in a game, simply show that again.
     console.log("received already-ingame");
-    hideShowSection($("#RoomList"), $("#GameScreen")); 
+    currentScreen = "GameScreen";
+    hideShowSection($("#RoomList"), $("#GameScreen"));
   });
 
   //We have this extra event so the view doesn't flicker through showing/hiding of sections.
@@ -155,6 +157,11 @@ function roomListCardClick(object) {
   console.log("Called with " + object);
   //TODO: save room name, show join screen with password, upon join send all stuff
   roomToJoin = object.attr('id');
+
+  //push to history for back button functionality :)
+  currentScreen = "JoinServerScreen";
+  window.history.pushState(currentScreen, "");
+  
   hideShowSection($("#RoomList"), $("#JoinServerScreen"));
 }
 
@@ -223,10 +230,14 @@ function hideShowSection(sectionHide, sectionShow) {
 $('#CREATE_SCREEN_BUTTON').click(function () {
   console.log("CREATE Screen");
 
-  
+
   socket.emit('require_room_config', 1);
 
+  //push to history for back button functionality :)
+  currentScreen = "CreateServerScreen";
+  window.history.pushState(currentScreen, "");
 
+  
   //Hide join section, show game section
   hideShowSection($("#RoomList"), $("#CreateServerScreen"));
 });
@@ -262,6 +273,7 @@ $('#CREATE_BUTTON').click(function () {
   //TODO: maybe we should store all the input form val()'s in js variables / objects?
   socket.emit('join_room', { UUID: clientUUID, pass: pass, room: room, name: playerName, img: playerImage });
   //Hide join section, show game section
+  currentScreen = "GameScreen";
   hideShowSection($("#CreateServerScreen"), $("#GameScreen"));
 });
 
@@ -304,8 +316,7 @@ $('.info-card').click(function () {
   }
 });
 
-function imageFileHandler(e)
-{
+function imageFileHandler(e) {
   //console.log("IMAGEFILEHANDLER");
   var file = e.target.files[0];
   if (file) {
@@ -327,4 +338,48 @@ function imageFileHandler(e)
 
 serverInputField.on('change', imageFileHandler);
 clientInputField.on('change', imageFileHandler);
+
+
+
+window.onpopstate = function (event) {
+
+  console.log(event);
+
+  if (event.state == "JoinServerScreen") // get the current state from the event obj
+  {
+    if (currentScreen == "JoinServerScreen") {
+      //If we were on "JoinServerScreen", we hide it and show the start screen again.
+      //Hide join section, show room list
+      currentScreen = "RoomList";
+      hideShowSection($("#JoinServerScreen"), $("#RoomList"));
+    }
+    else if (currentScreen == "RoomList")
+      {
+        //We want to go "forward" again
+        currentScreen = "JoinServerScreen";
+        window.history.pushState(currentScreen, "");
+        hideShowSection($("#RoomList"), $("#JoinServerScreen"));
+      }
+
+  }
+  else if (event.state == "GameScreen") {
+    //Do nothing? We don't want to go away from the game screen, I guess
+  }
+  else if (event.state == "CreateServerScreen") {
+    if (currentScreen == "CreateServerScreen") {
+      //If we were on "CreateServerScreen", we hide it and show the start screen again.
+      //Hide join section, show room list
+      currentScreen = "RoomList";
+      hideShowSection($("#CreateServerScreen"), $("#RoomList"));
+    }
+    else if (currentScreen == "RoomList")
+      {
+        //We want to go "forward" again
+        currentScreen = "CreateServerScreen";
+        window.history.pushState(currentScreen, "");
+        hideShowSection($("#RoomList"), $("#CreateServerScreen"));
+      }
+  }
+  //location.reload(); // reloads the current page to clear ajax changes
+};
 
