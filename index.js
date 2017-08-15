@@ -117,10 +117,6 @@ io.on('connection', function (socket) {
       handler.handleVote(msg.UUID, msg);
     }
   });
-  //Try to load pages based on their state...
-  socket.on('buttonPressed', function (msg) {
-    console.log("Button pressed: " + msg.toString());
-  });
 
   socket.on('client_connect', function (msg) {
     console.log("client_connect by " + msg.UUID);
@@ -160,28 +156,22 @@ io.on('connection', function (socket) {
     socket.join("ROOM_LIST_ROOM_WHICH_CAN_NOT_BE_SELECTED_AS_A_NAME_BY_ANY_HOST");
     console.log("Socket with UUID " + msg.UUID + " joined room list!");
 
-
-
     //Set Screen:
     //var text = fs.readFileSync("./Resources/Pages/StartScreen.html");
     //io.emit("draw_screen", text.toString());
   });
   socket.on('join_room', function (msg) {
-
     if (checkSocketAndGivenUUID(msg.UUID, socket) == false) {
       //Someone sent a wrong UUID.
       console.log("WRONG UUID IN join_room");
       return;
     }
-
     console.log("join_room: " + msg.room + " by " + msg.UUID);
     if (!(msg.room in GameHandlers)) {
       console.log("Cannot join room " + msg.room + " as it doesn't exist. By UUID " + msg.UUID);
       return;
     }
-
     var handler = GameHandlers[msg.room];
-
     //TODO: check if necessary?
     /*if (msg.UUID in UUIDSocketMap && msg.UUID in UUIDRoomMap) {
       //check if we were already connected.
@@ -202,16 +192,12 @@ io.on('connection', function (socket) {
     if (handler.getGameState().gameStarted != 0) {
       console.log("Game in room " + msg.room + " is already running, can not join! UUID: " + msg.UUID);
 
+      socket.emit("client_alert","Game in room " + msg.room + " is already running, can not join!")
       socket.leaveAll();
-
       roomList = getRoomList();
-
       socket.emit("room_list", roomList);
-
       //Join roomList again, and send "room_list" event again.
       socket.join("ROOM_LIST_ROOM_WHICH_CAN_NOT_BE_SELECTED_AS_A_NAME_BY_ANY_HOST");
-
-
       return;
     }
 
@@ -221,20 +207,16 @@ io.on('connection', function (socket) {
     if (handler.getUpdatedHostServerData().pass != "" && handler.getUpdatedHostServerData().pass != msg.pass) {
       console.log("Wrong password for room " + msg.room + "!");
       console.log("Is: " + msg.pass + " | Should be: " + handler.getUpdatedHostServerData().pass);
-
-      socket.leaveAll();
-
-      roomList = getRoomList();
-
-      socket.emit("room_list", roomList);
-
+      
+      socket.emit("client_alert","Wrong Password!")
+      
+      //socket.leaveAll();
+      //roomList = getRoomList();
+      //socket.emit("room_list", roomList);
       //Join roomList again, and send "room_list" event again.
-      socket.join("ROOM_LIST_ROOM_WHICH_CAN_NOT_BE_SELECTED_AS_A_NAME_BY_ANY_HOST");
+      //socket.join("ROOM_LIST_ROOM_WHICH_CAN_NOT_BE_SELECTED_AS_A_NAME_BY_ANY_HOST");
       return;
     }
-
-
-
 
     //UUIDSocketMap[msg.UUID] = socket;
     UUIDRoomMap[msg.UUID] = msg.room;
@@ -252,9 +234,7 @@ io.on('connection', function (socket) {
     handler.initPlayerDataFromOptions(msg);
     //GameHandlers[msg.room].printAllUUIDS();
     //broadcast initial state so all players get stuff upon connecting
-    handler.broadcastPlayerData();
-
-   
+    handler.broadcastPlayerData(); 
   });
   socket.on('create_room', function (msg) {
     //msg has to contain the different options for the game

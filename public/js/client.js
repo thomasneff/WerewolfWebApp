@@ -32,9 +32,11 @@ $(function () {
     updatePlayerData(msg);
   });
   socket.on('player_speak', function (msg) {
+    console.log("Player Speak");
     Speak(msg);
   });
   socket.on('time_update', function (msg) {
+    console.log("Time update");
     var date = new Date(null);
     date.setSeconds(msg); // specify value for SECONDS here
     date = date.toISOString().substr(14, 5);
@@ -43,36 +45,26 @@ $(function () {
 
   socket.on('already_ingame', function (msg) {
     //we were already in a game, simply show that again.
-    hideShowSection($("#RoomList"), $("#GameScreen"));
-
     console.log("received already-ingame");
+    hideShowSection($("#RoomList"), $("#GameScreen")); 
   });
 
   //We have this extra event so the view doesn't flicker through showing/hiding of sections.
   socket.on('room_list', function (roomList) {
     console.log("Start screen will be shown.")
-
     $('#GENERATED_ROOM_LIST').empty();
-
     roomList.forEach(function (roomInfo) {
       createRoomListCard(roomInfo)
     }, this);
-
     $('#GameScreen').hide();
     $('#JoinServerScreen').hide();
     $('#CreateServerScreen').hide();
-
     $('#RoomList').show();
   });
 
-
-  //FUTURE USE:
-  socket.on('clear_screen', function () {
-    console.log("EMPTY");
-    $('#ScreenBody').empty();
-  });
-  socket.on('draw_screen', function (msg) {
-    $('#ScreenBody').prepend(msg);
+  socket.on('client_alert', function (msg) {
+    console.log("ALERT!");
+    alert(msg.toString());
   });
 });
 
@@ -85,19 +77,17 @@ function changeOwnPlayerInfo(playerInfo) {
     $('#READY_BUTTON').hide();
     $('#READY_BUTTON').prop("disabled", true);
   }
-
   $("#PHASE_NAME").text("Phase: " + playerInfo.gamePhase);
+
+  //Change Character Related Stuff:
+  $("#CHARACTER_NAME").text(playerInfo.role);
 }
 
 function updatePlayerData(playerData) {
-
-
   //If we receive playerData, we must be in game. Hide everything else.
-
   $('#RoomList').hide();
   $('#JoinServerScreen').hide();
   $('#CreateServerScreen').hide();
-
   $('#GameScreen').show();
 
   //clear all cards
@@ -140,7 +130,6 @@ function UserReady(object) {
   object.prop("disabled", true);
 }
 
-
 function createRoomListCard(roomInfo) {
   //{type:"Fiat", model:"500", color:"white"};
   var template = $('#ROOMLIST_CARD_TEMPLATE');
@@ -165,11 +154,8 @@ function createRoomListCard(roomInfo) {
 function roomListCardClick(object) {
   console.log("Called with " + object);
   //TODO: save room name, show join screen with password, upon join send all stuff
-
   roomToJoin = object.attr('id');
-
   hideShowSection($("#RoomList"), $("#JoinServerScreen"));
-
 }
 
 function createPlayerInfoCard(playerInfo) {
@@ -225,24 +211,21 @@ function hideShowSection(sectionHide, sectionShow) {
 }
 
 //Buttons and Callbacks:
-$('#JOIN_SCREEN_BUTTON').click(function () {
+//Not available anymore
+/*$('#JOIN_SCREEN_BUTTON').click(function () {
   console.log("JOIN Screen");
   socket.emit('buttonPressed', "JoinScreen");
-  //Unhide next element hide myself
-  //$(this).parent().parent().parent().hide();
-  //$(this).parent().parent().parent().next('section').next('section').show();
-
   //Hide join section, show game section
   hideShowSection($("#RoomList"), $("#JoinServerScreen"));
 
-});
+});*/
 
 $('#CREATE_SCREEN_BUTTON').click(function () {
   console.log("CREATE Screen");
+
+  
   socket.emit('require_room_config', 1);
-  //Unhide next element hide myself
-  //$(this).parent().parent().hide();
-  //$(this).parent().parent().next('section').show();
+
 
   //Hide join section, show game section
   hideShowSection($("#RoomList"), $("#CreateServerScreen"));
@@ -257,8 +240,6 @@ $('#CREATE_BUTTON').click(function () {
 
   console.log("Roomname: " + room);
   console.log("RoomPwd: " + pass);
-
-
 
   socket.emit('create_room', {
     UUID: clientUUID,
@@ -280,28 +261,15 @@ $('#CREATE_BUTTON').click(function () {
   //Create should also automatically join.
   //TODO: maybe we should store all the input form val()'s in js variables / objects?
   socket.emit('join_room', { UUID: clientUUID, pass: pass, room: room, name: playerName, img: playerImage });
-
-  //Unhide next element hide myself
-  //$(this).parent().parent().hide();
-  //$(this).parent().parent().next('section').show();
-
   //Hide join section, show game section
   hideShowSection($("#CreateServerScreen"), $("#GameScreen"));
 });
 
 $('#JOIN_BUTTON').click(function () {
   console.log("JOIN PRESSED");
-
   var name = $('#CLIENT_PLAYER_NAME_INPUT').val()
   var pass = $("#CLIENT_PWD_INPUT").val()
-
-
-  //console.log("NAME " + name);
-  //console.log("PASS " + pass);
-
   socket.emit('join_room', { UUID: clientUUID, name: name, img: playerImage, room: roomToJoin, pass: pass });
-  //$(this).parent().parent().hide();
-  //$(this).parent().parent().next('section').show();
 
   //The hiding/showing of the screens/views is done in the "join_ack" event.
 });
@@ -311,8 +279,6 @@ $('#READY_BUTTON').click(function () {
   UserReady($(this));
   socket.emit('ready', { UUID: clientUUID, ready: 1 });
   socket.emit('start', { UUID: clientUUID });
-  //$(this).parent().parent().parent().hide();
-  //$(this).parent().parent().parent().next('section').show();
 });
 
 /*
@@ -338,7 +304,6 @@ $('.info-card').click(function () {
   }
 });
 
-
 function imageFileHandler(e)
 {
   //console.log("IMAGEFILEHANDLER");
@@ -359,7 +324,6 @@ function imageFileHandler(e)
     }
   }
 }
-
 
 serverInputField.on('change', imageFileHandler);
 clientInputField.on('change', imageFileHandler);
