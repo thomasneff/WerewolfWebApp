@@ -1,4 +1,4 @@
-Maybe think about encryption (e.g. using https://github.com/auth0/socketio-jwt ), if it is easy to implement.
+Maybe think about encryption (e.g. using https://github.com/auth0/socketio-jwt , https://wmyers.github.io/technical/nodejs/Simple-JWT-auth-for-SocketIO/ ), if it is easy to implement.
 
 Force name to be entered (min 1 character) on client-side & server-side (server-side just reject similar to password fail).
 

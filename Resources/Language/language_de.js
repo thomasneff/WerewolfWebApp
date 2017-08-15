@@ -1,4 +1,4 @@
-{
+var language_de = {
     "Speak":
             {
             "StartGame":            "Willkommen bei Werwolf! Jedem Spieler wurde nach dem Zufallsprinzip eine Rolle zugewiesen. Genauere Informationen findet Ihr hinter dem Hut. Viel Spaß!",
@@ -31,3 +31,5 @@
             "TownspersonPicture":   "towndsperson.jpg"            
         }
   }
+
+  module.exports = language_de;

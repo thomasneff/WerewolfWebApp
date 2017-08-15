@@ -4,6 +4,13 @@ var path = require('path');
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var fs = require("fs");
+var language_de = require('./Resources/Language/language_de');
+
+//Example for language usage. We could make a big object, indexed by language short-strings (e.g. de, en, ...)
+//var localization = require('./Resources/localization');
+//localization.en.Speak.StartGame, localization['de'].Speak.StartGame, ... could easily access all that.
+//console.log(language_de.Speak.StartGame);
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 var GameHandler = require('./GameHandler');
