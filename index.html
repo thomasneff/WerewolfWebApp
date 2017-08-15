@@ -21,22 +21,23 @@
 
 <body id="ScreenBody">
 
-  <section id="StartScreen" style="display:none">
+  <section id="RoomList" style="display:none">
       <div class="card-header text-center">
           <h1>Werewolf-Online Game</h1>
           Please Select a running game or create one!
         </div>
     <!-- Use this as a template for all running Server...-->
-    <div class="col-md-6 mt-4" style="display:none" id="CARD_TEMPLATE">
+    <div class="col-md-6 mt-4" style="display:none" id="ROOMLIST_CARD_TEMPLATE">
         <div class="card" id="INSERT_ROOM_NAME_FOR_CLICK">
           <div class="row ">
             <div class="col col-md-4">
-              <img src="https://placeholdit.imgix.net/~text?txtsize=38&txt=400%C3%97400&w=400&h=400" class="w-100 room-img">
+              <img src="https://placeholdit.imgix.net/~text?txtsize=38&txt=400%C3%97400&w=400&h=400" class="w-50 room-img">
             </div>
             <div class="col col-md-8">
                 <div class="col col-md-8">
-                    <h3 class="room-name">RoomName</h3>
-                    <p class="room-num-players">Connected Players: 3</p>
+                    <h5 class="room-name">RoomName</h5>
+                    <h6 class="room-hostName">RoomName</h6>
+                    <h7 class="room-numPlayers">Connected: 3</h7>
                 </div>
             </div>             
           </div>
@@ -49,12 +50,12 @@
     </div>
 
      
-      <div class="card">
+    <!--  <div class="card">
           <div class="container text-center">
             <h4 class="card-title" id ="GameName">GameName</h4>
             <button type="button" class="btn btn-primary" id='JOIN_SCREEN_BUTTON'>Join</button>
           </div>
-      </div>
+      </div> -->
     <!-- Template END -->
         <div class="card-header text-center">
             <button type="button" class="btn btn-primary" id='CREATE_SCREEN_BUTTON'>Create Server PAGE</button>
@@ -75,10 +76,10 @@
             <input id="SERVER_PWD_INPUT" autocomplete="off" type="password"/>
             <p></p>   
             <h4 class="card-title" id ="PlayerName">PlayerName:</h4>
-            <input id="PLAYER_NAME_INPUT" autocomplete="off" />
+            <input id="SERVER_PLAYER_NAME_INPUT" autocomplete="off" />
             <p></p>   
             <h4 class="card-title" id ="PlayerPicture">PlayerPicture:</h4>
-            <input id="file" type="file" accept="image/*">
+            <input id="serverImageUploadInput" type="file" accept="image/*">
             <p></p>   
           </div>
       </div>
@@ -131,13 +132,13 @@
           <div class="container text-center">      
             <p></p>         
             <h4 class="card-title" id ="GameName">ServerPassword:</h4>
-            <input id="SERVER_PWD_INPUT" autocomplete="off" type="password"/>
+            <input id="CLIENT_PWD_INPUT" autocomplete="off" type="password"/>
             <p></p>   
             <h4 class="card-title" id ="PlayerName">PlayerName:</h4>
-            <input id="PLAYER_NAME_INPUT" autocomplete="off" />
+            <input id="CLIENT_PLAYER_NAME_INPUT" autocomplete="off" />
             <p></p>   
             <h4 class="card-title" id ="PlayerPicture">PlayerPicture:</h4>
-            <input id="file" type="file" accept="image/*">
+            <input id="clientImageUploadInput" type="file" accept="image/*">
             <p></p>   
           </div>
       </div>
