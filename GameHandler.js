@@ -146,19 +146,6 @@ class GamePhaseHandler {
     currentPhaseString() {
         return this.phases[this.currentPhase];
     }
-    /* changePlayerName(UUID, name)
-    {
-        this.checkAndCreateUUID(UUID);
-        
-        this.playerData[UUID].name = name;
-        console.log("Player name changed to: " + name);
-    }
-    changePlayerImage(UUID, img)
-    {
-        this.checkAndCreateUUID(UUID);
-        this.playerData[UUID].img = img;
-        console.log("Player img changed to: " + img);
-    } */
 
     changePlayerDataKeyValue(UUID, key, value) {
         //console.log("BEFORE")
@@ -171,8 +158,6 @@ class GamePhaseHandler {
         console.log("Player attribute " + key + " changed to " + value + " (UUID: " + UUID + ")");
         //this.printAllUUIDS();
     }
-
-
 
     addUUIDSocket(UUID, socket) {
         this.checkAndCreateUUID(UUID);
@@ -233,11 +218,6 @@ class GamePhaseHandler {
         this.intervalTimer = setTimeout(this.timerUpdate.bind(this), 1000);
     }
 
-    /*setRoomName(roomName)
-    {
-        this.serverData.roomName = roomName;
-    }
-    */
     getRoomName() {
         return this.serverData.room;
     }
@@ -341,6 +321,11 @@ class GamePhaseHandler {
         //the server has to check what to do for each phase in case people haven't voted yet or something.
         //important: if all people have voted before the timeout ends, we *need* to clear it
         //using clearTimeout(...)
+
+        this.io.to(this.serverData.room).emit("player_speak",  { "Language": this.serverData.language.toString(), "Text":"Das Spiel Beginnt!" });
+
+        setTimeout(function() {
+          }, 1500);
 
         //Do necessary starting stuff, set gamePhase for display in client, broadcast all an enable timer.
         this.startPhase(this.currentPhaseString())
