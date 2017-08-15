@@ -1,8 +1,12 @@
+Force name to be entered (min 1 character) on client-side & server-side (server-side just reject similar to password fail).
+
 Change Broadcast of playerData so it only gets sent to the specific player (e.g. Player1 refreshes, only he gets a message, not everyone.)
 
 Clear previous inputs if client gets rejected from joining (because of password)?
 
 Join/Create needs a back button.
+
+Game needs a disconnect button (needs to remove client from GameHandler and show room list again.)
 
 
 
