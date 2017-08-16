@@ -272,6 +272,7 @@ $('#CREATE_BUTTON').click(function () {
   });
   //Create should also automatically join.
   //TODO: maybe we should store all the input form val()'s in js variables / objects?
+  roomToJoin =room;
   socket.emit('join_room', { UUID: clientUUID, pass: pass, room: room, name: playerName, img: playerImage });
 
   //DON'T DO THAT IF SERVER CREATION FAILS!!
@@ -324,8 +325,13 @@ $('#READY_BUTTON').click(function () {
 
 $('#DISCONNECT_BUTTON').click(function () {
   console.log("DISCONNECT PRESSED");
-
   //TODO: send event to server, maybe request confirm at client?
+if(confirm("Do you really want to disconnect from the server?")==true)
+  {
+    //OK Pressed
+    socket.emit('player_disconnect', {UUID:clientUUID,room:roomToJoin});
+    hideShowSection($("#GameScreen"), $("#RoomList"));
+  }
 
 });
 

@@ -95,6 +95,37 @@ function guidGenerator() {
 io.on('connection', function (socket) {
   //console.log("CONNECTION");
 
+  socket.on('player_disconnect', function (msg) {
+    console.log("UUID: "+msg.UUID+"WANTS TO DISCONNECT FROM"+msg.room);
+    //Check if Room exists
+    if (!(msg.room in GameHandlers)) {
+      console.log("Cannot disconnect from room " + msg.room + " as it doesn't exist. By UUID " + msg.UUID);
+      return;
+    }
+    //Check if UUID is in room
+    if(Object.keys(GameHandlers[msg.room].playerData).length==1)
+      {
+        console.log("Only one player at this sever -> Clear server");
+        delete GameHandlers[msg.room];
+        delete UUIDSocketMap[msg.UUID];
+        delete UUIDRoomMap[msg.UUID];
+        return;
+      }
+      else
+        {
+          //make other person host ?!?
+          console.log("Just remove from Server related data structure [Resend Player infos?!?]");
+          delete GameHandlers[msg.room].playerData[msg.UUID];
+          //Set new host...
+         // var mapIter = Object.values(GameHandlers[msg.room].playerData);
+          //GameHandlers[msg.room].serverData.host =Object.values(Object.next(mapIter));
+          //TODO: ste host to next UUID...
+          delete UUIDSocketMap[msg.UUID];
+          delete UUIDRoomMap[msg.UUID];
+        }
+  });
+
+
   socket.on('require_room_config', function (msg) {
     console.log("REQUIRE_ROOM_CONFIG!!!!");
   });

@@ -1,5 +1,3 @@
-On room create send updated roomlist to all clients in room list channel
-
 Implement a generic server-config object (server-side), which gets sent to the client for the config page.
   - Could look something like this:
     //List of objects, which is sent to the client. Client then creates the config UI from this.
@@ -24,14 +22,12 @@ Implement a generic server-config object (server-side), which gets sent to the c
     ]
 
 
+Clear previous inputs if client gets rejected from joining (because of password)?
 
 Game needs a disconnect button (needs to remove client from GameHandler and show room list again.)
+DONE -> Check if removed properly from all maps
 
 Change Broadcast of playerData so it only gets sent to the specific player (e.g. Player1 refreshes, only he gets a message, not everyone.)
-
-
-    
-
 
 Replace ugly image file upload button with player-data clickable image, maybe at the side of the player name 
 (see https://stackoverflow.com/a/18803568 )
