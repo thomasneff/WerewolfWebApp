@@ -190,11 +190,16 @@ function createPlayerInfoCard(playerInfo) {
   templateCopy.show();
 }
 
+<<<<<<< HEAD
 function Speak(SpeakInfo) {
   responsiveVoice.speak(SpeakInfo.Text, SpeakInfo.Language);
 }
 
 function playerInfoCardClick(object) {
+=======
+
+function cardClick(object) {
+>>>>>>> parent of 6193cd4... Added Pictures and text for basic functionality, Added 3 Images to defauld Card-layout (not enabled)
   console.log("Called with " + object);
   //console.log($(this));
   //Server also checks this.
@@ -282,6 +287,7 @@ $('#CREATE_BUTTON').click(function () {
 
 });
 
+<<<<<<< HEAD
 $('#JOIN_BUTTON').click(function () {
   console.log("JOIN PRESSED");
   var name = $('#CLIENT_PLAYER_NAME_INPUT').val()
@@ -292,6 +298,28 @@ $('#JOIN_BUTTON').click(function () {
 $('#CREATE_BACK_BUTTON').click(function () {
   console.log("BACK PRESSED");
   //TODO: Refresh Serverlist ?!?
+=======
+$(function () {
+
+
+
+
+  if (localStorage.hasOwnProperty("werewolfAppID")) {
+    clientUUID = localStorage.getItem("werewolfAppID")
+    socket.emit('start_blabla', clientUUID);
+    console.log("TEST1 " + clientUUID);
+  }
+  else {
+
+    clientUUID = guidGenerator()
+    localStorage.setItem("werewolfAppID", clientUUID) // here someid from your google analytics fetch
+    socket.emit('start_blabla', clientUUID);
+    console.log("TEST2 " + clientUUID);
+  }
+
+
+  socket.emit('client_connect', { UUID: clientUUID });
+>>>>>>> parent of 6193cd4... Added Pictures and text for basic functionality, Added 3 Images to defauld Card-layout (not enabled)
 
   //This pushes our current state (CreateServerScreen)
   window.history.pushState(currentScreen, "");
@@ -311,10 +339,13 @@ $('#JOIN_BACK_BUTTON').click(function () {
   //This also allows us to use the "forward" browser action afterwards
   window.history.go(-1);
 
+<<<<<<< HEAD
 
   //TODO: Refresh Serverlist ?!?
   //hideShowSection($("#JoinServerScreen"), $("#RoomList"));
 });
+=======
+>>>>>>> parent of 6193cd4... Added Pictures and text for basic functionality, Added 3 Images to defauld Card-layout (not enabled)
 
 $('#READY_BUTTON').click(function () {
   console.log("READY PRESSED");
@@ -347,7 +378,15 @@ $('.info-card').click(function () {
   responsiveVoice.speak("");
   ttsEnabled = 1;
   console.log("TTS ENABLED")
+
   //handleFile();
+<<<<<<< HEAD
+=======
+
+
+  createCard({ name: "ANUSNAME" });
+
+>>>>>>> parent of 6193cd4... Added Pictures and text for basic functionality, Added 3 Images to defauld Card-layout (not enabled)
   if (cardState == 1) {
     $(this).removeClass('flipped_front');
     $(this).addClass('flipped_back');

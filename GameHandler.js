@@ -67,6 +67,12 @@ class GamePhaseHandler {
         //TODO: this should/could contain an object for each UUID, to enable specifics e.g. witch save/heal, ...
         //TODO: should we refactor this into serverData? Does that make sense?
         this.votes = {};
+<<<<<<< HEAD:GameHandler.js
+=======
+
+
+        //override all settings with option parameters
+>>>>>>> parent of 6193cd4... Added Pictures and text for basic functionality, Added 3 Images to defauld Card-layout (not enabled):GamePhaseHandler.js
 
 
         //init UUID in playerData for host
@@ -341,12 +347,17 @@ class GamePhaseHandler {
 
     //This timer just runs every second to provide a timer for the clients. Does not need to be very accurate.
     timerUpdate() {
+<<<<<<< HEAD:GameHandler.js
         this.secondsLeftInPhase--;
         console.log("Timer Update: " + this.secondsLeftInPhase);
         if (this.secondsLeftInPhase <= 10) {
             this.io.to(this.serverData.room).emit('player_speak', { "Language": this.serverData.language.toString(), "Text": this.secondsLeftInPhase.toString() });
         }
         this.io.to(this.serverData.room).emit('time_update', this.secondsLeftInPhase);
+=======
+        console.log("Timer Update: " + this.secondCount);
+        this.io.to(this.room).emit('time_update', this.secondCount--);
+>>>>>>> parent of 6193cd4... Added Pictures and text for basic functionality, Added 3 Images to defauld Card-layout (not enabled):GamePhaseHandler.js
         this.intervalTimer = setTimeout(this.timerUpdate.bind(this), 1000);
     }
 
